@@ -1068,7 +1068,7 @@ Return ONLY valid JSON — no markdown, no explanation:
 Find up to 12 real issues. Only flag genuine violations. Do not duplicate issues already caught by: ${Object.keys({weasel:1,latin:1,jargon:1,'second-pers':1,'long-sent':1}).join(', ')}.`;
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/claude', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1218,7 +1218,7 @@ async function fixAll() {
   const issueList = allIssues.map(i => `- ${i.ruleName}: "${i.flagged}" → ${i.suggestion}`).join('\n');
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
