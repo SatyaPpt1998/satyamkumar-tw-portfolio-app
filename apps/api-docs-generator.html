@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Doc Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --surface2: #1e2026;
+    --border: #2a2d35;
+    --border2: #363a45;
+    --text: #e8eaf0;
+    --muted: #6b7080;
+    --subtle: #3d4150;
+    --accent: #5b8fff;
+    --accent-dim: #1a2a4a;
+    --green: #3ecf6e;
+    --green-dim: #0d2b1a;
+    --amber: #f5a623;
+    --amber-dim: #2d1f08;
+    --red: #f05252;
+    --red-dim: #2d0f0f;
+    --purple: #a78bfa;
+    --purple-dim: #1e1535;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Layout */
+  .shell {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    grid-template-rows: 56px 1fr;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    gap: 12px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .logo-mark svg { width: 16px; height: 16px; }
+
+  .logo-text {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: .01em;
+    color: var(--text);
+  }
+
+  .logo-text span {
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  header .spacer { flex: 1; }
+
+  .header-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  /* Left panel */
+  .panel-left {
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .08em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* Method + URL row */
+  .endpoint-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  select, input, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color .15s;
+  }
+
+  select:focus, input:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+
+  #method-select {
+    width: 90px;
+    padding: 8px 10px;
+    flex-shrink: 0;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7080' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 26px;
+  }
+
+  #endpoint-url {
+    flex: 1;
+    padding: 8px 12px;
+  }
+
+  #api-input {
+    width: 100%;
+    height: 180px;
+    padding: 12px;
+    resize: none;
+    font-size: 11.5px;
+    line-height: 1.7;
+  }
+
+  /* Sample buttons */
+  .samples {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sample-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sample-btn:hover {
+    border-color: var(--border2);
+    color: var(--text);
+    background: var(--subtle);
+  }
+
+  .sample-method {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  /* Generate button */
+  .gen-wrap {
+    padding: 16px 20px;
+    margin-top: auto;
+  }
+
+  #gen-btn {
+    width: 100%;
+    padding: 11px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  #gen-btn:hover { opacity: .88; }
+  #gen-btn:active { transform: scale(.98); }
+  #gen-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Right panel */
+  .panel-right {
+    overflow-y: auto;
+    padding: 32px 36px;
+    background: var(--bg);
+  }
+
+  /* Empty state */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 400px;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .empty-icon {
+    width: 48px; height: 48px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+
+  .empty-state p { color: var(--muted); font-size: 13px; max-width: 260px; line-height: 1.6; }
+
+  /* Doc output */
+  #doc-output { display: none; animation: fadeIn .3s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Endpoint header */
+  .doc-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 16px;
+  }
+
+  .doc-title { flex: 1; }
+
+  .doc-title h1 {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .doc-title p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .doc-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .action-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .action-btn:hover { color: var(--text); border-color: var(--border2); }
+
+  /* Endpoint pill */
+  .endpoint-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+
+  .method-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: .04em;
+  }
+
+  .m-GET    { background: var(--green-dim);  color: var(--green);  }
+  .m-POST   { background: var(--accent-dim); color: var(--accent); }
+  .m-PUT    { background: var(--amber-dim);  color: var(--amber);  }
+  .m-PATCH  { background: var(--purple-dim); color: var(--purple); }
+  .m-DELETE { background: var(--red-dim);    color: var(--red);    }
+
+  .endpoint-url { color: var(--text); flex: 1; }
+
+  /* Sections */
+  .doc-section { margin-bottom: 32px; }
+
+  .doc-section-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Table */
+  .doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .doc-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .doc-table td {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text);
+  }
+
+  .doc-table tr:hover td { background: var(--surface); }
+
+  .param-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  .param-type {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--purple);
+  }
+
+  .required-badge {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--red-dim);
+    color: var(--red);
+  }
+
+  .optional-badge {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--surface2);
+    color: var(--muted);
+  }
+
+  /* Code block */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .code-block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .code-lang {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .copy-btn {
+    font-size: 11px;
+    font-family: var(--sans);
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color .15s;
+  }
+
+  .copy-btn:hover { color: var(--text); }
+
+  .code-block pre {
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.75;
+    color: var(--text);
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  /* Error codes */
+  .error-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .error-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  .error-code {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 42px;
+    flex-shrink: 0;
+  }
+
+  .error-code.e-4 { color: var(--amber); }
+  .error-code.e-5 { color: var(--red); }
+  .error-code.e-2 { color: var(--green); }
+
+  .error-info .error-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .error-info .error-desc {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Auth section */
+  .auth-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .auth-icon {
+    width: 32px; height: 32px;
+    background: var(--accent-dim);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .auth-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .auth-desc  { font-size: 12px; color: var(--muted); }
+
+  /* Rate limit */
+  .rate-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  .rate-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .rate-value {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .rate-label { font-size: 11px; color: var(--muted); }
+
+  /* Error message */
+  .error-msg {
+    background: var(--red-dim);
+    border: 1px solid var(--red);
+    color: var(--red);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 13px;
+    display: none;
+    margin-top: 12px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 4h10M3 8h6M3 12h8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="logo-text">DocGen <span>/ API Documentation Generator</span></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="header-badge">claude-sonnet-4-20250514</div>
+  </header>
+
+  <!-- Left panel -->
+  <div class="panel-left">
+
+    <div class="panel-section">
+      <div class="panel-label">Endpoint</div>
+      <div class="endpoint-row">
+        <select id="method-select">
+          <option>GET</option>
+          <option>POST</option>
+          <option>PUT</option>
+          <option>PATCH</option>
+          <option>DELETE</option>
+        </select>
+        <input id="endpoint-url" type="text" placeholder="/api/v1/users/{id}" />
+      </div>
+    </div>
+
+    <div class="panel-section" style="flex:1;display:flex;flex-direction:column;gap:10px;">
+      <div class="panel-label">API details</div>
+      <textarea id="api-input" placeholder="Paste your raw API details here — JSON body, parameters, headers, curl command, or plain description.
+
+Example:
+{
+  &quot;query&quot;: &quot;string — search term&quot;,
+  &quot;limit&quot;: &quot;int — max results (default 20)&quot;,
+  &quot;offset&quot;: &quot;int — pagination offset&quot;
+}
+
+Response:
+{
+  &quot;users&quot;: [...],
+  &quot;total&quot;: 142,
+  &quot;next_cursor&quot;: &quot;abc123&quot;
+}"></textarea>
+      <div id="error-msg" class="error-msg"></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-label">Load a sample</div>
+      <div class="samples">
+        <button class="sample-btn" onclick="loadSample('list')">
+          <span class="sample-method m-GET">GET</span> List users with search &amp; pagination
+        </button>
+        <button class="sample-btn" onclick="loadSample('create')">
+          <span class="sample-method m-POST">POST</span> Create a new user account
+        </button>
+        <button class="sample-btn" onclick="loadSample('delete')">
+          <span class="sample-method m-DELETE">DELETE</span> Delete a user by ID
+        </button>
+      </div>
+    </div>
+
+    <div class="gen-wrap">
+      <button id="gen-btn" onclick="generateDocs()">
+        <div class="spinner" id="spinner"></div>
+        <span id="gen-label">Generate documentation</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Right panel -->
+  <div class="panel-right">
+
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M4 6h14M4 10h9M4 14h11" stroke="#6b7080" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <p>Fill in your endpoint details and click generate to create API documentation.</p>
+    </div>
+
+    <div id="doc-output"></div>
+
+  </div>
+</div>
+
+<script>
+const SAMPLES = {
+  list: {
+    method: 'GET',
+    url: '/api/v1/users',
+    body: `Query parameters:
+- query: string — search term to filter users by name or email
+- limit: integer — max results to return (default: 20, max: 100)
+- offset: integer — pagination offset (default: 0)
+- status: string — filter by account status: "active" | "inactive" | "pending"
+
+Response:
+{
+  "users": [
+    { "id": "usr_abc123", "name": "Jane Smith", "email": "jane@example.com", "status": "active", "created_at": "2024-01-15T10:30:00Z" }
+  ],
+  "total": 142,
+  "limit": 20,
+  "offset": 0,
+  "next_cursor": "cursor_xyz"
+}
+
+Authentication: Bearer token required`
+  },
+  create: {
+    method: 'POST',
+    url: '/api/v1/users',
+    body: `Request body (JSON):
+{
+  "name": "string (required) — full name of the user",
+  "email": "string (required) — valid email address, must be unique",
+  "role": "string (optional) — 'admin' | 'member' | 'viewer', defaults to 'member'",
+  "send_invite": "boolean (optional) — whether to send an invite email, defaults to true"
+}
+
+Response (201 Created):
+{
+  "id": "usr_newxyz",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "role": "member",
+  "status": "pending",
+  "created_at": "2024-03-10T09:00:00Z"
+}
+
+Authentication: Bearer token required, must have admin role`
+  },
+  delete: {
+    method: 'DELETE',
+    url: '/api/v1/users/{id}',
+    body: `Path parameter:
+- id: string (required) — the unique user ID (e.g. usr_abc123)
+
+Response: 204 No Content on success
+
+Constraints:
+- Cannot delete your own account
+- Cannot delete the last admin in an organization
+- Deleting a user removes all their sessions and revokes API tokens
+
+Authentication: Bearer token required, must have admin role`
+  }
+};
+
+function loadSample(key) {
+  const s = SAMPLES[key];
+  document.getElementById('method-select').value = s.method;
+  document.getElementById('endpoint-url').value = s.url;
+  document.getElementById('api-input').value = s.body;
+  hideError();
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('error-msg').style.display = 'none';
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('gen-btn');
+  const spinner = document.getElementById('spinner');
+  const label = document.getElementById('gen-label');
+  btn.disabled = on;
+  spinner.style.display = on ? 'block' : 'none';
+  label.textContent = on ? 'Generating...' : 'Generate documentation';
+}
+
+async function generateDocs() {
+  hideError();
+  const method = document.getElementById('method-select').value;
+  const url = document.getElementById('endpoint-url').value.trim();
+  const body = document.getElementById('api-input').value.trim();
+
+  if (!body) { showError('Please paste some API details first.'); return; }
+
+  setLoading(true);
+
+  const systemPrompt = `You are an expert technical writer for SaaS APIs. Given raw API details, generate complete, accurate API documentation.
+
+Return ONLY valid JSON — no markdown fences, no preamble. Use this exact schema:
+{
+  "name": "short endpoint name (e.g. List Users)",
+  "description": "one clear sentence describing what this endpoint does",
+  "method": "${method}",
+  "url": "${url || '/api/endpoint'}",
+  "authentication": {
+    "type": "Bearer Token | API Key | None",
+    "description": "one sentence on how to authenticate"
+  },
+  "parameters": [
+    { "name": "param_name", "type": "string|integer|boolean|object|array", "required": true, "location": "query|path|body|header", "description": "clear description of this parameter" }
+  ],
+  "request_body": "JSON string of example request body, or null if not applicable",
+  "response_body": "JSON string of example success response",
+  "error_codes": [
+    { "code": "400", "title": "Bad Request", "description": "when this error occurs" },
+    { "code": "401", "title": "Unauthorized", "description": "when this error occurs" },
+    { "code": "404", "title": "Not Found", "description": "when this error occurs" },
+    { "code": "429", "title": "Too Many Requests", "description": "when this error occurs" },
+    { "code": "500", "title": "Internal Server Error", "description": "when this error occurs" }
+  ],
+  "rate_limit": {
+    "requests": "number as string e.g. 1000",
+    "window": "e.g. per hour",
+    "note": "brief note about rate limiting"
+  }
+}
+
+Write descriptions in active voice, plain language, present tense. Be specific and concrete.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `Method: ${method}\nURL: ${url || 'not specified'}\n\nAPI Details:\n${body}` }]
+      })
+    });
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    const doc = JSON.parse(clean);
+    renderDoc(doc);
+  } catch(e) {
+    showError('Failed to generate documentation. Check your input and try again.');
+    console.error(e);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+function toMarkdown(doc) {
+  let md = `# ${doc.name}\n\n${doc.description}\n\n`;
+  md += `## Endpoint\n\n\`${doc.method} ${doc.url}\`\n\n`;
+  if (doc.authentication) {
+    md += `## Authentication\n\n**${doc.authentication.type}** — ${doc.authentication.description}\n\n`;
+  }
+  if (doc.parameters?.length) {
+    md += `## Parameters\n\n| Name | Type | Required | Location | Description |\n|------|------|----------|----------|-------------|\n`;
+    doc.parameters.forEach(p => {
+      md += `| \`${p.name}\` | ${p.type} | ${p.required ? 'Yes' : 'No'} | ${p.location} | ${p.description} |\n`;
+    });
+    md += '\n';
+  }
+  if (doc.request_body) {
+    md += `## Request body\n\n\`\`\`json\n${doc.request_body}\n\`\`\`\n\n`;
+  }
+  if (doc.response_body) {
+    md += `## Response\n\n\`\`\`json\n${doc.response_body}\n\`\`\`\n\n`;
+  }
+  if (doc.error_codes?.length) {
+    md += `## Error codes\n\n`;
+    doc.error_codes.forEach(e => {
+      md += `- **${e.code} ${e.title}** — ${e.description}\n`;
+    });
+    md += '\n';
+  }
+  if (doc.rate_limit) {
+    md += `## Rate limiting\n\n${doc.rate_limit.requests} requests ${doc.rate_limit.window}. ${doc.rate_limit.note}\n`;
+  }
+  return md;
+}
+
+function renderDoc(doc) {
+  document.getElementById('empty-state').style.display = 'none';
+
+  const params = doc.parameters || [];
+  const errors = doc.error_codes || [];
+  const md = toMarkdown(doc);
+
+  const paramsHtml = params.length ? `
+    <div class="doc-section">
+      <div class="doc-section-title">Parameters</div>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Name</th><th>Type</th><th>Required</th><th>Location</th><th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${params.map(p => `
+            <tr>
+              <td><span class="param-name">${p.name}</span></td>
+              <td><span class="param-type">${p.type}</span></td>
+              <td>${p.required ? '<span class="required-badge">required</span>' : '<span class="optional-badge">optional</span>'}</td>
+              <td style="color:var(--muted);font-family:var(--mono);font-size:11px;">${p.location}</td>
+              <td style="color:var(--muted);">${p.description}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : '';
+
+  const reqHtml = doc.request_body ? `
+    <div class="doc-section">
+      <div class="doc-section-title">Request body</div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-lang">JSON</span>
+          <button class="copy-btn" onclick="copyText(${JSON.stringify(doc.request_body)}, this)">Copy</button>
+        </div>
+        <pre>${escHtml(doc.request_body)}</pre>
+      </div>
+    </div>` : '';
+
+  const resHtml = doc.response_body ? `
+    <div class="doc-section">
+      <div class="doc-section-title">Response</div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-lang">JSON</span>
+          <button class="copy-btn" onclick="copyText(${JSON.stringify(doc.response_body)}, this)">Copy</button>
+        </div>
+        <pre>${escHtml(doc.response_body)}</pre>
+      </div>
+    </div>` : '';
+
+  const errorsHtml = errors.length ? `
+    <div class="doc-section">
+      <div class="doc-section-title">Error codes</div>
+      <div class="error-list">
+        ${errors.map(e => `
+          <div class="error-item">
+            <span class="error-code e-${e.code[0]}">${e.code}</span>
+            <div class="error-info">
+              <div class="error-title">${e.title}</div>
+              <div class="error-desc">${e.description}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  const authHtml = doc.authentication ? `
+    <div class="doc-section">
+      <div class="doc-section-title">Authentication</div>
+      <div class="auth-item">
+        <div class="auth-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="4" y="7" width="8" height="7" rx="1.5" stroke="#5b8fff" stroke-width="1.2"/>
+            <path d="M5.5 7V5a2.5 2.5 0 015 0v2" stroke="#5b8fff" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="auth-title">${doc.authentication.type}</div>
+          <div class="auth-desc">${doc.authentication.description}</div>
+        </div>
+      </div>
+    </div>` : '';
+
+  const rateHtml = doc.rate_limit ? `
+    <div class="doc-section">
+      <div class="doc-section-title">Rate limiting</div>
+      <div class="rate-row">
+        <div class="rate-card">
+          <span class="rate-value">${doc.rate_limit.requests}</span>
+          <span class="rate-label">Requests</span>
+        </div>
+        <div class="rate-card">
+          <span class="rate-value" style="font-size:13px;padding-top:4px;">${doc.rate_limit.window}</span>
+          <span class="rate-label">Window</span>
+        </div>
+        <div class="rate-card" style="grid-column: span 1;">
+          <span class="rate-value" style="font-size:12px;font-weight:400;color:var(--muted);padding-top:2px;">${doc.rate_limit.note}</span>
+          <span class="rate-label">Note</span>
+        </div>
+      </div>
+    </div>` : '';
+
+  const out = document.getElementById('doc-output');
+  out.innerHTML = `
+    <div class="doc-header">
+      <div class="doc-title">
+        <h1>${doc.name}</h1>
+        <p>${doc.description}</p>
+      </div>
+      <div class="doc-actions">
+        <button class="action-btn" onclick="copyText(${JSON.stringify(md)}, this)">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M3 9H2a1 1 0 01-1-1V2a1 1 0 011-1h6a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          Copy as Markdown
+        </button>
+      </div>
+    </div>
+
+    <div class="endpoint-pill">
+      <span class="method-badge m-${doc.method}">${doc.method}</span>
+      <span class="endpoint-url">${doc.url}</span>
+    </div>
+
+    ${authHtml}
+    ${paramsHtml}
+    ${reqHtml}
+    ${resHtml}
+    ${errorsHtml}
+    ${rateHtml}
+  `;
+
+  out.style.display = 'block';
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

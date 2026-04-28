@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocLint — Style Checker</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0d1117;
+  --bg2:       #161b22;
+  --bg3:       #1c2333;
+  --bg4:       #21262d;
+  --border:    #30363d;
+  --border2:   #3d444d;
+  --text:      #e6edf3;
+  --text2:     #adbac7;
+  --muted:     #636e7b;
+  --hint:      #3d444d;
+  --mono:      'Fira Code', monospace;
+  --sans:      'Syne', sans-serif;
+  --red:       #ff7b72;
+  --red-dim:   #3d1c1c;
+  --red-line:  #da3633;
+  --amber:     #e3b341;
+  --amber-dim: #2d2008;
+  --amber-line:#d29922;
+  --blue:      #79c0ff;
+  --blue-dim:  #0d1e2d;
+  --blue-line: #388bfd;
+  --green:     #56d364;
+  --green-dim: #0d2318;
+  --purple:    #d2a8ff;
+  --teal:      #39d0d8;
+  --score-a:   #56d364;
+  --score-b:   #79c0ff;
+  --score-c:   #e3b341;
+  --score-d:   #ff9e64;
+  --score-f:   #ff7b72;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+header {
+  height: 48px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-mark {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: var(--bg);
+  background: var(--green);
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+
+.logo-name {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -.01em;
+}
+
+.logo-version {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.tab-row {
+  display: flex;
+  gap: 2px;
+  margin-left: 8px;
+}
+
+.tab {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  padding: 4px 12px;
+  border-radius: 4px 4px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.tab.active {
+  color: var(--text);
+  background: var(--bg3);
+  border-color: var(--border);
+  border-bottom-color: var(--bg3);
+}
+
+header .spc { flex: 1; }
+
+.hdr-pill {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* ── Main layout ── */
+.app {
+  display: grid;
+  grid-template-columns: 280px 1fr 320px;
+  height: calc(100vh - 48px);
+  overflow: hidden;
+}
+
+/* ── Left sidebar: config ── */
+.sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.side-section {
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.side-head:hover { background: var(--bg3); }
+
+.side-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.side-chevron { font-size: 9px; color: var(--hint); transition: transform .2s; }
+.side-body { padding: 10px 14px; }
+.side-body.closed { display: none; }
+
+/* Style guide pills */
+.guide-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.guide-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+}
+
+.guide-pill:hover { border-color: var(--border2); }
+
+.guide-pill.active {
+  border-color: var(--green);
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.guide-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+/* Rules list */
+.rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.rule-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  transition: background .1s;
+}
+
+.rule-row:hover { background: var(--bg3); }
+
+.rule-toggle {
+  width: 26px; height: 14px;
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  position: relative;
+  cursor: pointer;
+  transition: background .15s;
+  flex-shrink: 0;
+}
+
+.rule-toggle.on { background: var(--green); border-color: var(--green); }
+
+.rule-toggle-thumb {
+  position: absolute;
+  top: 1px; left: 1px;
+  width: 10px; height: 10px;
+  background: var(--text2);
+  border-radius: 50%;
+  transition: left .15s;
+}
+
+.rule-toggle.on .rule-toggle-thumb { left: 13px; background: var(--bg); }
+
+.rule-name-sm { font-family: var(--mono); font-size: 11px; color: var(--text2); flex: 1; }
+
+.sev-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.s-e { background: var(--red); }
+.s-w { background: var(--amber); }
+.s-s { background: var(--blue); }
+
+/* Gen button */
+.gen-wrap { padding: 14px; margin-top: auto; }
+
+#lint-btn {
+  width: 100%;
+  padding: 10px;
+  background: var(--green);
+  color: var(--bg);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: .04em;
+}
+
+#lint-btn:hover { opacity: .88; }
+#lint-btn:active { transform: scale(.98); }
+#lint-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+.spinner {
+  width: 12px; height: 12px;
+  border: 1.5px solid rgba(13,17,23,.3);
+  border-top-color: var(--bg);
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  display: none;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Centre: editor ── */
+.editor-pane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.editor-filename {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.file-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
+
+.editor-meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+/* Sample buttons */
+.sample-pills {
+  display: flex;
+  gap: 5px;
+}
+
+.sample-p {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 3px 9px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.sample-p:hover { color: var(--text2); border-color: var(--border2); }
+
+/* Editor area */
+.editor-wrap {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+.line-nums {
+  width: 48px;
+  padding: 14px 0;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-right: 10px;
+  gap: 0;
+  overflow: hidden;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.line-num {
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--hint);
+  min-height: 19.2px;
+}
+
+#doc-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 14px 20px;
+  resize: none;
+  outline: none;
+  overflow-y: auto;
+  caret-color: var(--green);
+}
+
+/* Highlighted view */
+#doc-highlighted {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 14px 20px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  display: none;
+  color: var(--text2);
+}
+
+.hl-error   { background: var(--red-dim);   border-bottom: 2px solid var(--red-line);   border-radius: 2px; cursor: pointer; }
+.hl-warning { background: var(--amber-dim); border-bottom: 2px solid var(--amber-line); border-radius: 2px; cursor: pointer; }
+.hl-suggest { background: var(--blue-dim);  border-bottom: 1px dashed var(--blue-line); border-radius: 2px; cursor: pointer; }
+
+.hl-error:hover, .hl-warning:hover, .hl-suggest:hover { opacity: .8; }
+
+/* Tooltip */
+.lint-tooltip {
+  position: fixed;
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+  max-width: 280px;
+  z-index: 999;
+  pointer-events: none;
+  display: none;
+  line-height: 1.5;
+}
+
+.tt-rule { color: var(--muted); font-size: 10px; margin-bottom: 3px; }
+.tt-fix  { color: var(--green); margin-top: 4px; }
+
+/* Error message */
+.err-banner {
+  background: var(--red-dim);
+  border-top: 1px solid var(--red-line);
+  color: var(--red);
+  padding: 8px 16px;
+  font-size: 11px;
+  display: none;
+}
+
+/* Status bar */
+.status-bar {
+  height: 24px;
+  background: var(--green);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.status-bar.ready   { background: var(--bg3); }
+.status-bar.linting { background: var(--amber-dim); border-top: 1px solid var(--amber-line); }
+.status-bar.done    { background: var(--green-dim); border-top: 1px solid var(--green); }
+.status-bar.error   { background: var(--red-dim); border-top: 1px solid var(--red-line); }
+
+.status-item {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-item.active { color: var(--green); }
+
+/* ── Right panel: results ── */
+.results-pane {
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Score card */
+.score-card {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.score-ring-wrap {
+  position: relative;
+  width: 64px; height: 64px;
+  flex-shrink: 0;
+}
+
+.score-ring-wrap svg { transform: rotate(-90deg); }
+
+.score-ring-bg { fill: none; stroke: var(--bg3); stroke-width: 5; }
+.score-ring-fill { fill: none; stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1), stroke .4s; }
+
+.score-num-big {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--sans);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.score-info { flex: 1; }
+
+.score-grade {
+  font-family: var(--sans);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.score-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.score-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.sbd-item {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.sbd-num { font-family: var(--sans); font-size: 18px; font-weight: 600; display: block; }
+.sbd-lbl { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+
+/* Issues list */
+.issues-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.issues-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.issues-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+}
+
+.issues-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.issue-item {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .1s;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.issue-item:hover { background: var(--bg3); }
+.issue-item.active { background: var(--bg4); border-left: 2px solid var(--green); }
+
+.issue-sev-bar {
+  width: 3px;
+  border-radius: 2px;
+  align-self: stretch;
+  flex-shrink: 0;
+  min-height: 30px;
+}
+
+.issue-body { flex: 1; min-width: 0; }
+
+.issue-rule {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: .04em;
+  margin-bottom: 2px;
+}
+
+.issue-flagged {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.issue-fix {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Empty / placeholder state for results */
+.results-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 30px;
+  color: var(--muted);
+}
+
+.placeholder-code {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--hint);
+  line-height: 1.8;
+  text-align: left;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 16px;
+  width: 100%;
+}
+
+/* Fix-all section */
+.fix-all-wrap {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+#fix-btn {
+  width: 100%;
+  padding: 9px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 11px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+#fix-btn:hover { border-color: var(--green); color: var(--green); }
+#fix-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- Tooltip -->
+<div class="lint-tooltip" id="tooltip">
+  <div class="tt-rule" id="tt-rule"></div>
+  <div id="tt-msg"></div>
+  <div class="tt-fix" id="tt-fix"></div>
+</div>
+
+<header>
+  <div class="logo">
+    <span class="logo-mark">LINT</span>
+    <span class="logo-name">DocLint</span>
+    <span class="logo-version">v1.0</span>
+  </div>
+  <div class="tab-row">
+    <div class="tab active">editor</div>
+    <div class="tab" style="color:var(--hint);">output</div>
+  </div>
+  <div class="spc"></div>
+  <div class="hdr-pill">claude-sonnet-4-20250514</div>
+</header>
+
+<div class="app">
+
+  <!-- ── Left sidebar ── -->
+  <div class="sidebar">
+
+    <div class="side-section">
+      <div class="side-head" onclick="toggleSide(this)">
+        <span class="side-title">Style Guide</span>
+        <span class="side-chevron">▾</span>
+      </div>
+      <div class="side-body">
+        <div class="guide-pills">
+          <div class="guide-pill active" data-guide="microsoft" onclick="setGuide(this)">
+            <span class="guide-dot"></span> Microsoft Writing Style
+          </div>
+          <div class="guide-pill" data-guide="google" onclick="setGuide(this)">
+            <span class="guide-dot"></span> Google Dev Docs Style
+          </div>
+          <div class="guide-pill" data-guide="plain" onclick="setGuide(this)">
+            <span class="guide-dot"></span> Plain Language (GOV.UK)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-section" style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+      <div class="side-head" onclick="toggleSide(this)">
+        <span class="side-title">Rules</span>
+        <span class="side-chevron">▾</span>
+      </div>
+      <div class="side-body" style="flex:1;overflow-y:auto;padding:10px 14px;">
+        <div class="rules-list" id="rules-list"></div>
+      </div>
+    </div>
+
+    <div class="gen-wrap">
+      <button id="lint-btn" onclick="runLint()">
+        <div class="spinner" id="spinner"></div>
+        <span id="lint-label">▶ Run Lint</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── Editor ── -->
+  <div class="editor-pane">
+    <div class="editor-toolbar">
+      <div class="editor-filename">
+        <div class="file-dot"></div>
+        draft.md
+      </div>
+      <div class="sample-pills">
+        <div class="sample-p" onclick="loadSample('bad')">Grade F sample</div>
+        <div class="sample-p" onclick="loadSample('medium')">Grade C sample</div>
+        <div class="sample-p" onclick="loadSample('good')">Grade A sample</div>
+      </div>
+      <div class="editor-meta" id="editor-meta">0 words · 0 sentences</div>
+    </div>
+
+    <div class="editor-wrap">
+      <div class="line-nums" id="line-nums"><div class="line-num">1</div></div>
+      <textarea id="doc-input" spellcheck="false" placeholder="Paste your documentation draft here…
+
+The linter will check for passive voice, jargon, long sentences, weasel words, nominalisations, and more — using your selected style guide rules." oninput="onInput()"></textarea>
+      <div id="doc-highlighted"></div>
+    </div>
+
+    <div class="err-banner" id="err-banner"></div>
+
+    <div class="status-bar ready" id="status-bar">
+      <span class="status-item" id="st-words">0 words</span>
+      <span class="status-item" id="st-sents">0 sentences</span>
+      <span class="status-item" id="st-flesch">Flesch: —</span>
+      <span class="status-item" style="margin-left:auto;" id="st-mode">READY</span>
+    </div>
+  </div>
+
+  <!-- ── Results ── -->
+  <div class="results-pane">
+
+    <div class="score-card" id="score-card">
+      <div class="score-ring-wrap">
+        <svg viewBox="0 0 64 64" width="64" height="64">
+          <circle class="score-ring-bg" cx="32" cy="32" r="27"/>
+          <circle class="score-ring-fill" id="score-ring" cx="32" cy="32" r="27"
+            stroke-dasharray="169.6" stroke-dashoffset="169.6" stroke="var(--green)"/>
+        </svg>
+        <div class="score-num-big" id="score-num">—</div>
+      </div>
+      <div class="score-info">
+        <div class="score-grade" id="score-grade" style="color:var(--muted);">—</div>
+        <div class="score-label" id="score-label">No analysis yet</div>
+      </div>
+    </div>
+
+    <div class="score-breakdown" id="score-breakdown">
+      <div class="sbd-item">
+        <span class="sbd-num" id="cnt-e" style="color:var(--red);">—</span>
+        <span class="sbd-lbl">Errors</span>
+      </div>
+      <div class="sbd-item">
+        <span class="sbd-num" id="cnt-w" style="color:var(--amber);">—</span>
+        <span class="sbd-lbl">Warnings</span>
+      </div>
+      <div class="sbd-item">
+        <span class="sbd-num" id="cnt-s" style="color:var(--blue);">—</span>
+        <span class="sbd-lbl">Suggestions</span>
+      </div>
+    </div>
+
+    <div class="issues-header">
+      <span class="issues-title">Issues</span>
+      <span class="issues-count" id="issues-count">—</span>
+    </div>
+
+    <div id="results-body" class="issues-list">
+      <div class="results-placeholder">
+        <div class="placeholder-code">$ doclint run draft.md<br><span style="color:var(--muted);">// Select a style guide,<br>// paste your doc, and<br>// click Run Lint</span></div>
+      </div>
+    </div>
+
+    <div class="fix-all-wrap">
+      <button id="fix-btn" onclick="fixAll()" disabled>
+        ✦ Auto-fix all suggestions
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+/* ── Rule definitions ── */
+const ALL_RULES = [
+  { id:'passive',     name:'Passive voice',       sev:'error',   regex: null, ai:true,  guides:['microsoft','google','plain'] },
+  { id:'long-sent',   name:'Long sentence (30w+)', sev:'error',   regex: null, ai:false, guides:['microsoft','google','plain'] },
+  { id:'nominalise',  name:'Nominalisation',       sev:'warning', regex: null, ai:true,  guides:['microsoft','google','plain'] },
+  { id:'weasel',      name:'Weasel words',         sev:'warning', regex:/\b(very|quite|rather|somewhat|fairly|pretty|basically|essentially|generally|usually|often|simply)\b/gi, ai:false, guides:['microsoft','google','plain'] },
+  { id:'latin',       name:'Latin abbreviations',  sev:'warning', regex:/\b(e\.g\.|i\.e\.|etc\.|viz\.|cf\.)/gi, ai:false, guides:['google','plain'] },
+  { id:'jargon',      name:'Jargon / buzzwords',   sev:'warning', regex:/\b(leverage|synergy|utilise|utilize|paradigm|holistic|robust|seamless|scalable|innovative|cutting.edge|best.in.class|world.class|next.generation|game.changer|disrupt)\b/gi, ai:false, guides:['microsoft','google','plain'] },
+  { id:'contractions',name:'Missing contractions', sev:'suggest', regex: null, ai:true,  guides:['microsoft'] },
+  { id:'second-pers', name:'Third person (→ you)', sev:'suggest', regex:/\b(the user|the users|users should|users can|users need)\b/gi, ai:false, guides:['microsoft','google'] },
+  { id:'double-neg',  name:'Double negatives',     sev:'warning', regex:/\b(not un|not in|not dis)\w+/gi, ai:false, guides:['microsoft','google','plain'] },
+  { id:'hedge',       name:'Hedging language',     sev:'suggest', regex:/\b(it (is|was|could be|might be|may be|seems|appears) (possible|likely|that|worth))\b/gi, ai:false, guides:['plain'] },
+  { id:'exclaim',     name:'Exclamation marks',    sev:'suggest', regex:/!+/g, ai:false, guides:['microsoft','google'] },
+  { id:'adverb',      name:'Unnecessary adverbs',  sev:'suggest', regex:/\b(easily|quickly|simply|just|really|actually|clearly|obviously|certainly|definitely)\b/gi, ai:false, guides:['google','plain'] },
+];
+
+const GUIDE_RULES = {
+  microsoft: ['passive','long-sent','nominalise','weasel','jargon','contractions','second-pers','exclaim'],
+  google:    ['passive','long-sent','nominalise','weasel','latin','jargon','second-pers','adverb','exclaim'],
+  plain:     ['passive','long-sent','nominalise','weasel','latin','jargon','hedge','double-neg','adverb'],
+};
+
+let activeGuide = 'microsoft';
+let activeRules = new Set(GUIDE_RULES.microsoft);
+let allIssues   = [];
+let currentText = '';
+
+/* ── Samples ── */
+const SAMPLES = {
+  bad: `The new feature was implemented by the development team in order to facilitate the utilization of advanced data processing capabilities. It should be noted that the configuration of the system settings is performed by the administrator prior to the deployment of the application. Users are required to ensure that the appropriate permissions have been granted by their manager before attempting to access the portal.
+
+The documentation was written by the technical writing team and it is hoped that it will be found to be useful by the reader. In the event that difficulties are encountered during the installation process, it is recommended that the troubleshooting guide be consulted. The system is very robust and quite scalable, and leverages cutting-edge technology to deliver a seamless, best-in-class experience.
+
+It is important that users do not fail to save their work before logging out of the system, as data may not be recoverable in all situations. The process of configuration involves the modification of settings in the admin panel, and this should be done carefully to avoid potential issues.`,
+
+  medium: `The reporting dashboard gives users access to real-time analytics and data visualisation tools. To generate a report, the user needs to select a date range and click the Export button. Reports can be exported in CSV or PDF format.
+
+Note that large date ranges (over 90 days) may cause the report to take longer to generate. If the export fails, users should check their internet connection and try again. The system is quite flexible and supports multiple data sources.
+
+Administrators can configure access permissions for each team member. Permission levels include View, Edit, and Admin. It is recommended that Admin access is only granted to senior team members. If you need to change a user's permissions, go to Settings and select Team Management.`,
+
+  good: `The reporting dashboard lets you view real-time analytics and export data visualisations. To generate a report, select a date range and click Export. Choose CSV for spreadsheet analysis or PDF for sharing.
+
+Reports covering more than 90 days may take up to two minutes to generate. If your export fails, check your internet connection and try again.
+
+Admins can set access levels for each team member: View, Edit, or Admin. Grant Admin access only to senior team members. To change a team member's access, go to Settings > Team Management.`
+};
+
+/* ── Init ── */
+renderRulesList();
+
+function renderRulesList() {
+  const list = document.getElementById('rules-list');
+  list.innerHTML = ALL_RULES.map(r => `
+    <div class="rule-row">
+      <div class="rule-toggle ${activeRules.has(r.id) ? 'on' : ''}" onclick="toggleRule('${r.id}',this)">
+        <div class="rule-toggle-thumb"></div>
+      </div>
+      <div class="sev-dot s-${r.sev[0]}"></div>
+      <span class="rule-name-sm">${r.name}</span>
+    </div>`).join('');
+}
+
+function toggleRule(id, el) {
+  if (activeRules.has(id)) { activeRules.delete(id); el.classList.remove('on'); }
+  else { activeRules.add(id); el.classList.add('on'); }
+}
+
+function toggleSide(head) {
+  const body = head.nextElementSibling;
+  const ch = head.querySelector('.side-chevron');
+  body.classList.toggle('closed');
+  ch.style.transform = body.classList.contains('closed') ? 'rotate(-90deg)' : '';
+}
+
+function setGuide(el) {
+  document.querySelectorAll('.guide-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  activeGuide = el.dataset.guide;
+  activeRules = new Set(GUIDE_RULES[activeGuide]);
+  renderRulesList();
+}
+
+function loadSample(key) {
+  const ta = document.getElementById('doc-input');
+  ta.value = SAMPLES[key];
+  showEditor();
+  onInput();
+}
+
+function onInput() {
+  const text = document.getElementById('doc-input').value;
+  currentText = text;
+  updateMeta(text);
+  updateLineNums(text);
+}
+
+function updateMeta(text) {
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const sents = text.trim() ? text.split(/[.!?]+/).filter(s => s.trim().length > 2).length : 0;
+  const fl = words > 10 ? flesch(text) : null;
+  document.getElementById('editor-meta').textContent = `${words} words · ${sents} sentences`;
+  document.getElementById('st-words').textContent = `${words} words`;
+  document.getElementById('st-sents').textContent = `${sents} sentences`;
+  document.getElementById('st-flesch').textContent = fl !== null ? `Flesch: ${fl}` : `Flesch: —`;
+}
+
+function updateLineNums(text) {
+  const lines = (text || '').split('\n');
+  const el = document.getElementById('line-nums');
+  el.innerHTML = lines.map((_, i) => `<div class="line-num">${i+1}</div>`).join('');
+}
+
+/* ── Flesch ── */
+function countSyl(w) {
+  w = w.toLowerCase().replace(/[^a-z]/g,'');
+  if (!w) return 0;
+  let c=0, prev=false;
+  for (const ch of w) { const v='aeiouy'.includes(ch); if(v&&!prev)c++; prev=v; }
+  if (w.endsWith('e') && c>1) c--;
+  return Math.max(c,1);
+}
+
+function flesch(text) {
+  const sents = text.split(/[.!?]+/).filter(s=>s.trim().length>2);
+  const words  = text.trim().split(/\s+/).filter(Boolean);
+  if (!sents.length || !words.length) return 0;
+  const syls = words.reduce((n,w)=>n+countSyl(w),0);
+  return Math.min(100, Math.max(0, Math.round(206.835 - 1.015*(words.length/sents.length) - 84.6*(syls/words.length))));
+}
+
+/* ── Regex rules client-side ── */
+function runRegexRules(text) {
+  const issues = [];
+  // Long sentences
+  if (activeRules.has('long-sent')) {
+    const sents = text.split(/(?<=[.!?])\s+/);
+    sents.forEach(s => {
+      const wc = s.trim().split(/\s+/).length;
+      if (wc > 30) {
+        const snippet = s.trim().slice(0,60) + (s.length>60?'…':'');
+        issues.push({ rule:'long-sent', ruleName:'Long sentence', sev:'error', flagged: snippet, suggestion:'Break into two shorter sentences (aim for under 20 words)', explanation:`This sentence is ${wc} words — aim for under 20.` });
+      }
+    });
+  }
+  // Regex-based rules
+  ALL_RULES.filter(r => r.regex && activeRules.has(r.id)).forEach(r => {
+    const matches = [...text.matchAll(r.regex)];
+    matches.forEach(m => {
+      const fixes = {
+        'weasel':      `Remove "${m[0]}" or rephrase without it`,
+        'latin':       `Replace "${m[0]}" with plain English: "for example", "that is", "and so on"`,
+        'jargon':      `Replace "${m[0]}" with a plain alternative`,
+        'second-pers': `Replace "${m[0]}" with "you"`,
+        'double-neg':  `Rewrite as a positive statement`,
+        'hedge':       `State directly without hedging`,
+        'exclaim':     `Remove exclamation mark — use a full stop`,
+        'adverb':      `Remove "${m[0]}" — the verb is usually enough`,
+      };
+      issues.push({
+        rule: r.id, ruleName: r.name, sev: r.sev,
+        flagged: m[0],
+        suggestion: fixes[r.id] || `Review "${m[0]}"`,
+        explanation: `"${m[0]}" violates the active rule: ${r.name}`
+      });
+    });
+  });
+  return issues;
+}
+
+/* ── Main lint ── */
+async function runLint() {
+  const text = document.getElementById('doc-input').value.trim();
+  if (!text) { showErr('Please paste some text first.'); return; }
+  hideErr();
+  setLoading(true);
+  setStatus('linting');
+  allIssues = [];
+
+  // 1. Client-side regex rules (instant)
+  const regexIssues = runRegexRules(text);
+
+  // 2. AI rules
+  const aiRuleIds = ALL_RULES.filter(r => r.ai && activeRules.has(r.id)).map(r => r.id);
+  const aiRuleNames = ALL_RULES.filter(r => r.ai && activeRules.has(r.id)).map(r => r.name);
+  let aiIssues = [];
+
+  if (aiRuleIds.length > 0) {
+    const guideInstructions = {
+      microsoft: 'Microsoft Writing Style Guide: conversational, contractions encouraged, use "you" not "the user", active voice required.',
+      google:    'Google Developer Documentation Style Guide: clear and direct, active voice, no Latin abbreviations, no unnecessary adverbs.',
+      plain:     'Plain Language (GOV.UK standard): short sentences, no jargon, active voice only, clear and direct.'
+    };
+
+    const systemPrompt = `You are a professional documentation linter applying the ${guideInstructions[activeGuide]}
+
+Analyse the text for these specific issues: ${aiRuleNames.join(', ')}.
+
+Return ONLY valid JSON — no markdown, no explanation:
+{
+  "issues": [
+    {
+      "rule": "rule-id from: ${aiRuleIds.join(', ')}",
+      "ruleName": "human readable rule name",
+      "sev": "error | warning | suggest",
+      "flagged": "the exact phrase flagged (keep short, under 8 words)",
+      "suggestion": "concise fix suggestion (under 15 words)",
+      "explanation": "one sentence explaining why this is an issue"
+    }
+  ]
+}
+
+Find up to 12 real issues. Only flag genuine violations. Do not duplicate issues already caught by: ${Object.keys({weasel:1,latin:1,jargon:1,'second-pers':1,'long-sent':1}).join(', ')}.`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: text }]
+        })
+      });
+      const data = await res.json();
+      const raw = data.content?.[0]?.text || '';
+      const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+      aiIssues = parsed.issues || [];
+    } catch(e) { console.error('AI lint error:', e); }
+  }
+
+  // 3. Merge & sort
+  allIssues = [...regexIssues, ...aiIssues];
+  const order = { error:0, warning:1, suggest:2 };
+  allIssues.sort((a,b) => (order[a.sev]||2) - (order[b.sev]||2));
+
+  // 4. Score
+  const errors   = allIssues.filter(i => i.sev==='error').length;
+  const warnings = allIssues.filter(i => i.sev==='warning').length;
+  const suggests = allIssues.filter(i => i.sev==='suggest').length;
+  const score    = Math.max(0, Math.min(100, 100 - errors*6 - warnings*2.5 - suggests*0.8));
+
+  setLoading(false);
+  setStatus('done');
+  renderScore(Math.round(score), errors, warnings, suggests);
+  renderIssues(allIssues);
+  renderHighlights(text, allIssues);
+  document.getElementById('fix-btn').disabled = allIssues.length === 0;
+}
+
+function renderScore(score, e, w, s) {
+  const grades = score >= 90 ? ['A','var(--score-a)','Excellent'] : score >= 75 ? ['B','var(--score-b)','Good'] : score >= 60 ? ['C','var(--score-c)','Fair'] : score >= 45 ? ['D','var(--score-d)','Poor'] : ['F','var(--score-f)','Needs work'];
+  const [grade, color, label] = grades;
+  document.getElementById('score-num').textContent  = score;
+  document.getElementById('score-grade').textContent = grade;
+  document.getElementById('score-grade').style.color = color;
+  document.getElementById('score-label').textContent = label;
+  const ring = document.getElementById('score-ring');
+  ring.style.stroke = color;
+  const circ = 169.6;
+  setTimeout(() => { ring.style.strokeDashoffset = circ - (circ * score / 100); }, 100);
+  document.getElementById('cnt-e').textContent = e;
+  document.getElementById('cnt-w').textContent = w;
+  document.getElementById('cnt-s').textContent = s;
+  document.getElementById('issues-count').textContent = `${e+w+s} issues`;
+}
+
+function renderIssues(issues) {
+  const body = document.getElementById('results-body');
+  if (!issues.length) {
+    body.innerHTML = `<div class="results-placeholder"><div class="placeholder-code" style="color:var(--green);">✓ No issues found!<br><span style="color:var(--muted);">// Your doc passes all<br>// active style rules.</span></div></div>`;
+    return;
+  }
+  const colors = { error: 'var(--red)', warning: 'var(--amber)', suggest: 'var(--blue)' };
+  body.innerHTML = issues.map((iss, i) => `
+    <div class="issue-item" id="issue-${i}" onclick="focusIssue(${i})">
+      <div class="issue-sev-bar" style="background:${colors[iss.sev]||colors.suggest};"></div>
+      <div class="issue-body">
+        <div class="issue-rule">${iss.ruleName || iss.rule}</div>
+        <div class="issue-flagged" style="color:${colors[iss.sev]||colors.suggest};">"${(iss.flagged||'').slice(0,40)}"</div>
+        <div class="issue-fix">→ ${(iss.suggestion||'').slice(0,60)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function focusIssue(i) {
+  document.querySelectorAll('.issue-item').forEach(el => el.classList.remove('active'));
+  document.getElementById(`issue-${i}`)?.classList.add('active');
+  // Try to scroll highlighted span into view
+  const spans = document.getElementById('doc-highlighted').querySelectorAll('[data-issue]');
+  spans.forEach(s => { if (parseInt(s.dataset.issue) === i) { s.scrollIntoView({ behavior:'smooth', block:'center' }); } });
+}
+
+function renderHighlights(text, issues) {
+  const hl = document.getElementById('doc-highlighted');
+  const ta = document.getElementById('doc-input');
+  const cls = { error:'hl-error', warning:'hl-warning', suggest:'hl-suggest' };
+
+  // Build array of {start,end,issueIdx}
+  const spans = [];
+  issues.forEach((iss, i) => {
+    const phrase = iss.flagged;
+    if (!phrase || phrase.length < 2) return;
+    let idx = 0;
+    while (true) {
+      const pos = text.toLowerCase().indexOf(phrase.toLowerCase(), idx);
+      if (pos === -1) break;
+      spans.push({ start: pos, end: pos + phrase.length, i });
+      idx = pos + 1;
+      break; // first occurrence only
+    }
+  });
+
+  spans.sort((a,b) => a.start - b.start);
+
+  let html = '';
+  let cursor = 0;
+  spans.forEach(sp => {
+    if (sp.start < cursor) return;
+    html += esc(text.slice(cursor, sp.start));
+    const iss = issues[sp.i];
+    const c = cls[iss.sev] || cls.suggest;
+    html += `<span class="${c}" data-issue="${sp.i}" onmouseover="showTip(event,${sp.i})" onmouseout="hideTip()">${esc(text.slice(sp.start, sp.end))}</span>`;
+    cursor = sp.end;
+  });
+  html += esc(text.slice(cursor));
+
+  hl.innerHTML = html;
+  hl.style.display = 'block';
+  ta.style.display = 'none';
+  updateLineNums(text);
+}
+
+function showEditor() {
+  document.getElementById('doc-highlighted').style.display = 'none';
+  document.getElementById('doc-input').style.display = 'block';
+}
+
+function showTip(e, i) {
+  const iss = allIssues[i];
+  if (!iss) return;
+  const tip = document.getElementById('tooltip');
+  document.getElementById('tt-rule').textContent = iss.ruleName || iss.rule;
+  document.getElementById('tt-msg').textContent  = iss.explanation || '';
+  document.getElementById('tt-fix').textContent  = iss.suggestion ? `→ ${iss.suggestion}` : '';
+  tip.style.display = 'block';
+  tip.style.left = (e.clientX + 14) + 'px';
+  tip.style.top  = (e.clientY - 10) + 'px';
+}
+
+function hideTip() { document.getElementById('tooltip').style.display = 'none'; }
+
+/* ── Fix all ── */
+async function fixAll() {
+  const text = document.getElementById('doc-input').value.trim()
+    || (document.getElementById('doc-highlighted').textContent);
+  if (!text || !allIssues.length) return;
+
+  document.getElementById('fix-btn').disabled = true;
+  document.getElementById('fix-btn').textContent = '⟳ Fixing…';
+
+  const issueList = allIssues.map(i => `- ${i.ruleName}: "${i.flagged}" → ${i.suggestion}`).join('\n');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are a professional editor. Apply all the listed fixes to the document and return ONLY the corrected text — no explanation, no preamble, no markdown.`,
+        messages: [{ role:'user', content: `Document:\n${text}\n\nIssues to fix:\n${issueList}\n\nReturn the corrected document text only.` }]
+      })
+    });
+    const data = await res.json();
+    const fixed = data.content?.[0]?.text || '';
+    document.getElementById('doc-input').value = fixed;
+    showEditor();
+    currentText = fixed;
+    onInput();
+    allIssues = [];
+    // Re-run lint on fixed text
+    await runLint();
+  } catch(e) {
+    console.error(e);
+  } finally {
+    document.getElementById('fix-btn').disabled = false;
+    document.getElementById('fix-btn').innerHTML = '✦ Auto-fix all suggestions';
+  }
+}
+
+function setLoading(on) {
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('lint-label').textContent = on ? 'Linting…' : '▶ Run Lint';
+  document.getElementById('lint-btn').disabled = on;
+}
+
+function setStatus(state) {
+  const bar = document.getElementById('status-bar');
+  bar.className = 'status-bar ' + state;
+  document.getElementById('st-mode').textContent = state.toUpperCase();
+}
+
+function showErr(msg) {
+  const el = document.getElementById('err-banner');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+}
+
+function hideErr() { document.getElementById('err-banner').style.display = 'none'; }
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/\n/g,'<br>');
+}
+
+// Edit in highlighted view → switch back to textarea
+document.getElementById('doc-highlighted').addEventListener('click', () => {
+  const text = document.getElementById('doc-highlighted').innerText;
+  document.getElementById('doc-input').value = text;
+  showEditor();
+  document.getElementById('doc-input').focus();
+  onInput();
+});
+</script>
+</body>
+</html>

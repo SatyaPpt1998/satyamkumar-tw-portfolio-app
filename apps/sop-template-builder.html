@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOP Template Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:    #0f1923;
+  --navy2:   #172133;
+  --navy3:   #1e2d40;
+  --slate:   #2c3e52;
+  --steel:   #3d5166;
+  --border:  #2a3a4d;
+  --border2: #384d63;
+  --text:    #e8edf2;
+  --text2:   #b8c4cf;
+  --muted:   #7a90a4;
+  --hint:    #4a6070;
+  --gold:    #c8a96e;
+  --gold2:   #a8853e;
+  --gold-bg: #1e1a12;
+  --green:   #4caf82;
+  --green-bg:#0d1f17;
+  --red:     #e05555;
+  --red-bg:  #1f0d0d;
+  --amber:   #e0a840;
+  --serif:   'Playfair Display', Georgia, serif;
+  --mono:    'IBM Plex Mono', monospace;
+  --sans:    'IBM Plex Sans', sans-serif;
+  --doc-bg:  #f8f7f4;
+  --doc-ink: #1a1a1a;
+  --doc-muted: #555;
+  --doc-border: #d0ccc4;
+  --doc-navy: #0f1923;
+  --doc-gold: #8b6914;
+}
+
+body {
+  background: var(--navy);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+header {
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  height: 60px;
+  background: var(--navy2);
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+}
+
+.logo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.logo-serif {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -.01em;
+}
+
+.logo-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: var(--gold-bg);
+  border: 1px solid var(--gold2);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+.hdr-sep { width: 1px; height: 18px; background: var(--border); }
+.hdr-sub { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+header .spc { flex: 1; }
+.model-pill { font-family: var(--mono); font-size: 10px; color: var(--hint); background: var(--navy3); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; }
+
+/* ── Layout ── */
+.shell {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  min-height: calc(100vh - 60px);
+}
+
+/* ── Left panel ── */
+.panel-left {
+  background: var(--navy2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.p-section {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.p-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.p-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Input fields */
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.field-grid-3 { display: grid; grid-template-columns: 1fr 1fr 80px; gap: 8px; }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field-label { font-family: var(--mono); font-size: 10px; letter-spacing: .04em; color: var(--muted); }
+
+input[type="text"], textarea, select {
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  border-radius: 5px;
+  padding: 9px 11px;
+  outline: none;
+  transition: border-color .15s;
+  width: 100%;
+}
+
+input:focus, textarea:focus, select:focus { border-color: var(--steel); }
+input::placeholder, textarea::placeholder { color: var(--hint); }
+
+/* Industry cards */
+.industry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ind-card {
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ind-card:hover { border-color: var(--border2); background: var(--slate); }
+
+.ind-card.active {
+  border-color: var(--gold);
+  background: var(--gold-bg);
+}
+
+.ind-icon {
+  width: 28px; height: 28px;
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.ind-name { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.ind-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+/* Process textarea */
+#process-desc {
+  height: 130px;
+  resize: none;
+  line-height: 1.7;
+  font-size: 12px;
+}
+
+/* Samples */
+.sample-list { display: flex; flex-direction: column; gap: 6px; }
+
+.sample-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px 13px;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.sample-item:hover { border-color: var(--border2); color: var(--text2); }
+
+.sample-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Generate button */
+.gen-wrap { padding: 20px 24px; }
+
+#gen-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--gold);
+  color: var(--navy);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: .01em;
+}
+
+#gen-btn:hover { opacity: .88; }
+#gen-btn:active { transform: scale(.98); }
+#gen-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.spinner {
+  width: 13px; height: 13px;
+  border: 1.5px solid rgba(15,25,35,.3);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: none;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.err-msg {
+  background: var(--red-bg);
+  border: 1px solid var(--red);
+  color: var(--red);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  margin-top: 10px;
+  display: none;
+}
+
+/* ── Right panel ── */
+.panel-right {
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Toolbar */
+.doc-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 28px;
+  background: var(--navy2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.toolbar-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.toolbar-sep { width: 1px; height: 16px; background: var(--border); }
+.toolbar-spc { flex: 1; }
+
+.tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+
+.tool-btn:hover { color: var(--text); border-color: var(--border2); }
+
+.tool-btn.primary {
+  background: var(--gold-bg);
+  border-color: var(--gold2);
+  color: var(--gold);
+}
+
+.tool-btn.primary:hover { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+
+/* Document viewport */
+.doc-viewport {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.empty-emblem {
+  width: 56px; height: 56px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 4px;
+}
+
+.empty-title { font-family: var(--serif); font-size: 18px; color: var(--text2); }
+.empty-sub { font-size: 13px; color: var(--muted); max-width: 260px; line-height: 1.6; }
+
+/* ══════════════════════════════
+   DOCUMENT STYLES (print-ready)
+   ══════════════════════════════ */
+.sop-doc {
+  width: 100%;
+  max-width: 800px;
+  background: var(--doc-bg);
+  color: var(--doc-ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,.4);
+  animation: docIn .4s ease;
+}
+
+@keyframes docIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Doc header band */
+.doc-band {
+  background: var(--doc-navy);
+  color: #e8edf2;
+  padding: 24px 32px 20px;
+}
+
+.doc-band-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.doc-org {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+
+.doc-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.doc-subtitle {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #7a90a4;
+}
+
+.doc-id-block {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.doc-id {
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--gold);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.doc-status {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: #223a52;
+  color: #4caf82;
+  border: 1px solid #2d5c3e;
+}
+
+/* Control table */
+.ctrl-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1px solid #2a3a4d;
+}
+
+.ctrl-table td {
+  padding: 7px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  border-right: 1px solid #2a3a4d;
+  padding: 6px 16px;
+}
+
+.ctrl-table td:first-child { padding-left: 0; }
+.ctrl-table td:last-child { border-right: none; padding-right: 0; }
+
+.ctrl-key { color: #7a90a4; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; display: block; margin-bottom: 1px; }
+.ctrl-val { color: #e8edf2; }
+
+/* Doc body */
+.doc-body { padding: 28px 32px; }
+
+/* Section */
+.doc-section { margin-bottom: 24px; }
+
+.sec-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid var(--doc-border);
+}
+
+.sec-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--doc-gold);
+  background: #f0e8d0;
+  border: 1px solid #d4b870;
+  padding: 2px 7px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.sec-title {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--doc-navy);
+}
+
+.sec-content {
+  color: var(--doc-muted);
+  font-size: 13px;
+  line-height: 1.65;
+  outline: none;
+  border-radius: 3px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  transition: background .15s;
+}
+
+.sec-content:focus { background: #fffde7; outline: none; }
+
+/* Roles table */
+.roles-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.roles-table th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--doc-gold);
+  background: #f5f0e4;
+  padding: 7px 12px;
+  border: 1px solid var(--doc-border);
+  font-weight: 500;
+}
+
+.roles-table td {
+  padding: 8px 12px;
+  border: 1px solid var(--doc-border);
+  color: var(--doc-muted);
+  vertical-align: top;
+}
+
+.roles-table tr:nth-child(even) td { background: #f8f6f0; }
+
+/* Prereqs list */
+.prereq-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+
+.prereq-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--doc-muted);
+}
+
+.prereq-bullet {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--doc-gold);
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.prereq-bullet::after { content: ''; width: 6px; height: 6px; background: var(--doc-gold); border-radius: 1px; display: none; }
+
+/* Steps table */
+.steps-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.steps-table th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--doc-navy);
+  padding: 8px 12px;
+  border: 1px solid var(--doc-navy);
+  font-weight: 400;
+}
+
+.steps-table td {
+  padding: 10px 12px;
+  border: 1px solid var(--doc-border);
+  vertical-align: top;
+  color: var(--doc-muted);
+}
+
+.steps-table tr:nth-child(even) td { background: #f8f6f0; }
+.steps-table tr.decision-row td { background: #fef9ec; }
+
+.step-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--doc-navy);
+  white-space: nowrap;
+}
+
+.decision-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--doc-gold);
+  background: #fef3cd;
+  border: 1px solid #d4b870;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-left: 6px;
+}
+
+.role-chip {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--doc-navy);
+  background: #e8e4d8;
+  border: 1px solid var(--doc-border);
+  padding: 2px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* Notes & warnings */
+.note-item, .warn-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 5px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.note-item { background: #e8f4fd; border-left: 3px solid #3b82f6; color: #1e3a5f; }
+.warn-item { background: #fef3cd; border-left: 3px solid var(--doc-gold); color: #5c3d00; }
+
+.note-icon, .warn-icon { flex-shrink: 0; margin-top: 1px; }
+
+/* Revision table */
+.rev-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.rev-table th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--doc-gold);
+  background: #f5f0e4;
+  padding: 7px 12px;
+  border: 1px solid var(--doc-border);
+  font-weight: 500;
+}
+
+.rev-table td {
+  padding: 7px 12px;
+  border: 1px solid var(--doc-border);
+  color: var(--doc-muted);
+}
+
+/* Doc footer */
+.doc-footer {
+  background: #f0ece4;
+  border-top: 1px solid var(--doc-border);
+  padding: 12px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #999;
+}
+
+/* ── Print styles ── */
+@media print {
+  body { background: white; }
+  .shell { display: block; }
+  header, .panel-left, .doc-toolbar { display: none !important; }
+  .panel-right { display: block; }
+  .doc-viewport { padding: 0; }
+  .sop-doc { box-shadow: none; border-radius: 0; max-width: 100%; }
+  .doc-band { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .steps-table th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-serif">SOP Builder</span>
+    <span class="logo-tag">Enterprise</span>
+  </div>
+  <div class="hdr-sep"></div>
+  <span class="hdr-sub">Technical Writer Portfolio</span>
+  <div class="spc"></div>
+  <div class="model-pill">claude-sonnet-4-20250514</div>
+</header>
+
+<div class="shell">
+
+  <!-- ── Left panel ── -->
+  <div class="panel-left">
+
+    <div class="p-section">
+      <div class="p-label">Document metadata</div>
+      <div class="field-grid" style="margin-bottom:8px;">
+        <div class="field">
+          <span class="field-label">Process name</span>
+          <input type="text" id="f-process" placeholder="Employee Onboarding" />
+        </div>
+        <div class="field">
+          <span class="field-label">Department</span>
+          <input type="text" id="f-dept" placeholder="Human Resources" />
+        </div>
+      </div>
+      <div class="field-grid">
+        <div class="field">
+          <span class="field-label">Process owner</span>
+          <input type="text" id="f-owner" placeholder="HR Manager" />
+        </div>
+        <div class="field">
+          <span class="field-label">Version</span>
+          <input type="text" id="f-version" placeholder="1.0" />
+        </div>
+      </div>
+    </div>
+
+    <div class="p-section">
+      <div class="p-label">Industry</div>
+      <div class="industry-grid">
+        <div class="ind-card active" data-industry="hr" data-roles="HR Manager, HR Coordinator, New Employee, IT Administrator, Department Manager" onclick="selectIndustry(this)">
+          <div class="ind-icon" style="background:#1a2535;">👥</div>
+          <div>
+            <div class="ind-name">HR &amp; People Ops</div>
+            <div class="ind-desc">Onboarding, offboarding, performance</div>
+          </div>
+        </div>
+        <div class="ind-card" data-industry="software" data-roles="Developer, Tech Lead, QA Engineer, DevOps Engineer, Product Manager" onclick="selectIndustry(this)">
+          <div class="ind-icon" style="background:#1a2535;">⚙️</div>
+          <div>
+            <div class="ind-name">Software Eng.</div>
+            <div class="ind-desc">Deployments, incidents, releases</div>
+          </div>
+        </div>
+        <div class="ind-card" data-industry="finance" data-roles="Finance Analyst, Controller, CFO, Approver, Auditor" onclick="selectIndustry(this)">
+          <div class="ind-icon" style="background:#1a2535;">📊</div>
+          <div>
+            <div class="ind-name">Finance &amp; Compliance</div>
+            <div class="ind-desc">Approvals, audits, reporting</div>
+          </div>
+        </div>
+        <div class="ind-card" data-industry="support" data-roles="Support Agent, Team Lead, Customer, Billing Specialist, Escalation Manager" onclick="selectIndustry(this)">
+          <div class="ind-icon" style="background:#1a2535;">🎧</div>
+          <div>
+            <div class="ind-name">Customer Support</div>
+            <div class="ind-desc">Tickets, refunds, escalations</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-section">
+      <div class="p-label">Roles involved</div>
+      <input type="text" id="f-roles" placeholder="HR Manager, IT Admin, New Employee" />
+    </div>
+
+    <div class="p-section" style="flex:1;">
+      <div class="p-label">Process description</div>
+      <textarea id="process-desc" placeholder="Describe the process in plain English. Claude will extract the steps, identify decision points, and build a structured SOP.
+
+Example: When a new employee joins, HR sends a welcome email with their start date and sends IT a request to set up their laptop and accounts. On day one, the employee meets HR for orientation, signs documents, and is introduced to their team…"></textarea>
+      <div id="err-msg" class="err-msg"></div>
+    </div>
+
+    <div class="p-section">
+      <div class="p-label">Load a sample</div>
+      <div class="sample-list">
+        <div class="sample-item" onclick="loadSample('onboarding')">
+          <div class="sample-dot" style="background:#4caf82;"></div>
+          Employee onboarding — HR &amp; People Ops
+        </div>
+        <div class="sample-item" onclick="loadSample('deployment')">
+          <div class="sample-dot" style="background:#5b8fff;"></div>
+          Software deployment checklist — Engineering
+        </div>
+        <div class="sample-item" onclick="loadSample('refund')">
+          <div class="sample-dot" style="background:#c8a96e;"></div>
+          Customer refund approval — Support
+        </div>
+      </div>
+    </div>
+
+    <div class="gen-wrap">
+      <button id="gen-btn" onclick="generate()">
+        <div class="spinner" id="spinner"></div>
+        <span id="gen-label">Generate SOP document</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── Right panel ── -->
+  <div class="panel-right">
+
+    <div class="doc-toolbar">
+      <span class="toolbar-label">Document preview</span>
+      <div class="toolbar-sep"></div>
+      <span class="toolbar-label" id="doc-id-display" style="color:var(--gold);font-family:var(--mono);font-size:11px;"></span>
+      <div class="toolbar-spc"></div>
+      <button class="tool-btn" onclick="copyMarkdown()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 9H2a1 1 0 01-1-1V2a1 1 0 011-1h6a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Markdown
+      </button>
+      <button class="tool-btn" onclick="copyHtml()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3 3L1 6.5L3 10M10 3L12 6.5L10 10M7 2L6 11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        HTML
+      </button>
+      <button class="tool-btn" onclick="downloadTxt()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 10h9M6.5 2v6M4 6l2.5 2.5L9 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        .txt
+      </button>
+      <button class="tool-btn primary" onclick="printDoc()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="5" width="9" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 5V3h5v2M4 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Print / PDF
+      </button>
+    </div>
+
+    <div class="doc-viewport">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-emblem">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <rect x="4" y="3" width="16" height="18" rx="2" stroke="#4a6070" stroke-width="1.5"/>
+            <path d="M8 8h8M8 12h6M8 16h4" stroke="#4a6070" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="empty-title">No document yet</div>
+        <p class="empty-sub">Fill in the process details and click Generate to produce a print-ready SOP.</p>
+      </div>
+      <div id="doc-output" style="width:100%;max-width:800px;display:none;"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SAMPLES = {
+  onboarding: {
+    process: 'Employee Onboarding',
+    dept: 'Human Resources',
+    owner: 'HR Manager',
+    version: '1.0',
+    industry: 'hr',
+    roles: 'HR Manager, IT Administrator, Department Manager, New Employee',
+    desc: `When a new employee is hired, HR sends them a welcome email with their start date, equipment preferences form, and first-day instructions. HR also notifies IT to set up their laptop, email account, Slack, and access to required systems 3 days before the start date.
+
+On the first day, the new employee arrives and meets the HR Coordinator for a 2-hour orientation covering company policies, benefits enrollment, and document signing (NDA, employment contract, tax forms). If the employee is remote, this is done over video call.
+
+After orientation, IT checks that all equipment and system access is working. If there are any access issues, IT resolves them before end of day. The employee then meets their Department Manager who gives a 1-hour team introduction and assigns the first week's onboarding tasks in the project management tool.
+
+By end of week one, the Department Manager confirms the employee has completed all onboarding tasks and HR schedules a 30-day check-in.`
+  },
+  deployment: {
+    process: 'Software Production Deployment',
+    dept: 'Engineering',
+    owner: 'Tech Lead',
+    version: '2.1',
+    industry: 'software',
+    roles: 'Developer, Tech Lead, QA Engineer, DevOps Engineer',
+    desc: `Before any deployment, the Developer creates a pull request and assigns it to the Tech Lead for code review. If the review passes, the PR is merged to the main branch. If changes are requested, the Developer addresses them and the review cycle repeats.
+
+Once merged, the CI pipeline runs automated tests. If any tests fail, the deployment is blocked and the Developer fixes the failures. If all tests pass, the QA Engineer performs a final smoke test on the staging environment.
+
+If staging is approved by QA, the DevOps Engineer schedules the production deployment during the agreed deployment window (Tuesday or Thursday, 2–4pm UTC). The DevOps Engineer runs the deployment script, monitors error rates and response times for 30 minutes after deployment, and confirms success in the team Slack channel.
+
+If any critical errors are detected post-deployment, the DevOps Engineer triggers the rollback procedure immediately and notifies the Tech Lead and Product Manager.`
+  },
+  refund: {
+    process: 'Customer Refund Approval',
+    dept: 'Customer Support',
+    owner: 'Support Team Lead',
+    version: '1.2',
+    industry: 'support',
+    roles: 'Support Agent, Billing Specialist, Team Lead, Customer',
+    desc: `When a customer requests a refund, the Support Agent reviews the request in the helpdesk system and checks the purchase date. If the purchase is within the 30-day refund window and under $200, the Support Agent can approve and process the refund directly in the billing system and notifies the customer by email within 1 business day.
+
+If the purchase is over $200 or outside the 30-day window but within 90 days, the Support Agent escalates to the Billing Specialist who reviews the account history and customer tenure. If the customer is in good standing, the Billing Specialist approves the exception refund. If not, the request is declined and the Support Agent sends the customer a decline email with the reason.
+
+For requests over 90 days old or over $1000, the Billing Specialist escalates to the Team Lead who makes the final decision. The Team Lead's decision is final and must be documented in the customer record. The customer is notified of the decision within 2 business days.`
+  }
+};
+
+let currentDoc = null;
+
+function selectIndustry(card) {
+  document.querySelectorAll('.ind-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
+  const roles = card.dataset.roles;
+  document.getElementById('f-roles').value = roles;
+}
+
+function loadSample(key) {
+  const s = SAMPLES[key];
+  document.getElementById('f-process').value = s.process;
+  document.getElementById('f-dept').value = s.dept;
+  document.getElementById('f-owner').value = s.owner;
+  document.getElementById('f-version').value = s.version;
+  document.getElementById('f-roles').value = s.roles;
+  document.getElementById('process-desc').value = s.desc;
+  // Select industry card
+  document.querySelectorAll('.ind-card').forEach(c => {
+    c.classList.toggle('active', c.dataset.industry === s.industry);
+  });
+  hideErr();
+}
+
+function showErr(msg) { const e = document.getElementById('err-msg'); e.textContent = msg; e.style.display = 'block'; }
+function hideErr() { document.getElementById('err-msg').style.display = 'none'; }
+
+function setLoading(on) {
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('gen-label').textContent = on ? 'Generating SOP…' : 'Generate SOP document';
+  document.getElementById('gen-btn').disabled = on;
+}
+
+async function generate() {
+  hideErr();
+  const process  = document.getElementById('f-process').value.trim();
+  const dept     = document.getElementById('f-dept').value.trim();
+  const owner    = document.getElementById('f-owner').value.trim();
+  const version  = document.getElementById('f-version').value.trim() || '1.0';
+  const roles    = document.getElementById('f-roles').value.trim();
+  const desc     = document.getElementById('process-desc').value.trim();
+  const industry = document.querySelector('.ind-card.active')?.dataset.industry || 'general';
+
+  if (!desc) { showErr('Please describe the process first.'); return; }
+
+  setLoading(true);
+
+  const industryTone = {
+    hr:       'HR and People Operations. Use warm, professional tone. Emphasise compliance with employment law and employee experience.',
+    software: 'Software Engineering. Use precise, technical tone. Emphasise system reliability, rollback plans, and incident prevention.',
+    finance:  'Finance and Compliance. Use formal, audit-ready tone. Emphasise controls, approvals, segregation of duties, and audit trails.',
+    support:  'Customer Support. Use clear, action-oriented tone. Emphasise response times, escalation paths, and customer communication.'
+  };
+
+  const systemPrompt = `You are a senior technical writer with 15 years of enterprise documentation experience. You write SOPs that meet ISO 9001 quality management standards.
+
+Industry context: ${industryTone[industry] || 'General business operations.'}
+
+Generate a complete, professional SOP from the process description provided. Return ONLY valid JSON — no markdown fences, no preamble.
+
+Use this exact schema:
+{
+  "doc_id": "SOP-[DEPT_ABBREV]-[3-digit number, e.g. SOP-HR-001]",
+  "title": "formal SOP title",
+  "purpose": "one clear paragraph stating why this SOP exists and what it achieves",
+  "scope": "one paragraph stating what this SOP covers and what it does not cover",
+  "roles": [
+    { "role": "role name", "responsibilities": "2-3 sentence description of their responsibilities in this process" }
+  ],
+  "prerequisites": ["prerequisite item 1", "prerequisite item 2"],
+  "steps": [
+    {
+      "number": 1,
+      "action": "clear imperative action description (start with a verb)",
+      "responsible_role": "role name from the roles list",
+      "expected_output": "what is produced or confirmed at this step",
+      "is_decision": false
+    }
+  ],
+  "notes": ["helpful note 1", "helpful note 2"],
+  "warnings": ["important warning 1"],
+  "revision_history": [
+    { "version": "${version}", "date": "${new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'})}", "author": "${owner || 'Process Owner'}", "changes": "Initial release" }
+  ]
+}
+
+Mark steps with "is_decision": true if they involve a conditional choice (if/then/else logic).
+Write in active voice, present tense. Be specific and concrete. Aim for 6–12 steps.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{
+          role: 'user',
+          content: `Process name: ${process || 'Process'}\nDepartment: ${dept || 'General'}\nProcess owner: ${owner || 'Process Owner'}\nRoles involved: ${roles || 'Team Members'}\n\nProcess description:\n${desc}`
+        }]
+      })
+    });
+
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '';
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const doc = JSON.parse(clean);
+    currentDoc = { doc, process, dept, owner, version };
+    renderDoc(doc, { process, dept, owner, version });
+  } catch(e) {
+    showErr('Could not generate SOP. Please try again.');
+    console.error(e);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderDoc(doc, meta) {
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('doc-id-display').textContent = doc.doc_id || '';
+
+  const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  const rolesRows = (doc.roles || []).map(r => `
+    <tr>
+      <td><span class="role-chip">${esc(r.role)}</span></td>
+      <td>${esc(r.responsibilities)}</td>
+    </tr>`).join('');
+
+  const prereqItems = (doc.prerequisites || []).map(p => `
+    <li class="prereq-item">
+      <div class="prereq-bullet"></div>
+      <span>${esc(p)}</span>
+    </li>`).join('');
+
+  const stepRows = (doc.steps || []).map(s => `
+    <tr class="${s.is_decision ? 'decision-row' : ''}">
+      <td class="step-num">${s.number}${s.is_decision ? '<span class="decision-badge">◆ Decision</span>' : ''}</td>
+      <td contenteditable="true" style="outline:none;min-width:200px;">${esc(s.action)}</td>
+      <td><span class="role-chip">${esc(s.responsible_role)}</span></td>
+      <td style="color:#777;">${esc(s.expected_output)}</td>
+    </tr>`).join('');
+
+  const notesHtml = (doc.notes || []).map(n => `
+    <div class="note-item">
+      <span class="note-icon">ℹ</span>
+      <span contenteditable="true" style="outline:none;">${esc(n)}</span>
+    </div>`).join('');
+
+  const warnsHtml = (doc.warnings || []).map(w => `
+    <div class="warn-item">
+      <span class="warn-icon">⚠</span>
+      <span contenteditable="true" style="outline:none;">${esc(w)}</span>
+    </div>`).join('');
+
+  const revRows = (doc.revision_history || []).map(r => `
+    <tr>
+      <td style="font-family:var(--mono);font-size:11px;">${esc(r.version)}</td>
+      <td style="font-family:var(--mono);font-size:11px;">${esc(r.date)}</td>
+      <td>${esc(r.author)}</td>
+      <td>${esc(r.changes)}</td>
+    </tr>`).join('');
+
+  document.getElementById('doc-output').innerHTML = `
+  <div class="sop-doc" id="sop-document">
+
+    <div class="doc-band">
+      <div class="doc-band-top">
+        <div>
+          <div class="doc-org">${esc(meta.dept || 'Organisation')}</div>
+          <div class="doc-title">${esc(doc.title || meta.process)}</div>
+          <div class="doc-subtitle">Standard Operating Procedure</div>
+        </div>
+        <div class="doc-id-block">
+          <span class="doc-id">${esc(doc.doc_id || 'SOP-001')}</span>
+          <span class="doc-status">● DRAFT</span>
+        </div>
+      </div>
+      <table class="ctrl-table">
+        <tr>
+          <td><span class="ctrl-key">Version</span><span class="ctrl-val">${esc(meta.version)}</span></td>
+          <td><span class="ctrl-key">Effective date</span><span class="ctrl-val">${today}</span></td>
+          <td><span class="ctrl-key">Process owner</span><span class="ctrl-val">${esc(meta.owner || '—')}</span></td>
+          <td><span class="ctrl-key">Department</span><span class="ctrl-val">${esc(meta.dept || '—')}</span></td>
+          <td><span class="ctrl-key">Review cycle</span><span class="ctrl-val">Annual</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="doc-body">
+
+      <div class="doc-section">
+        <div class="sec-heading"><span class="sec-num">1</span><span class="sec-title">Purpose</span></div>
+        <div class="sec-content" contenteditable="true">${esc(doc.purpose || '')}</div>
+      </div>
+
+      <div class="doc-section">
+        <div class="sec-heading"><span class="sec-num">2</span><span class="sec-title">Scope</span></div>
+        <div class="sec-content" contenteditable="true">${esc(doc.scope || '')}</div>
+      </div>
+
+      <div class="doc-section">
+        <div class="sec-heading"><span class="sec-num">3</span><span class="sec-title">Roles &amp; Responsibilities</span></div>
+        <table class="roles-table">
+          <thead><tr><th style="width:30%;">Role</th><th>Responsibilities</th></tr></thead>
+          <tbody>${rolesRows}</tbody>
+        </table>
+      </div>
+
+      ${prereqItems ? `
+      <div class="doc-section">
+        <div class="sec-heading"><span class="sec-num">4</span><span class="sec-title">Prerequisites</span></div>
+        <ul class="prereq-list">${prereqItems}</ul>
+      </div>` : ''}
+
+      <div class="doc-section">
+        <div class="sec-heading"><span class="sec-num">5</span><span class="sec-title">Procedure</span></div>
+        <table class="steps-table">
+          <thead>
+            <tr>
+              <th style="width:60px;">Step</th>
+              <th>Action</th>
+              <th style="width:150px;">Responsible</th>
+              <th style="width:200px;">Expected output</th>
+            </tr>
+          </thead>
+          <tbody>${stepRows}</tbody>
+        </table>
+      </div>
+
+      ${notesHtml ? `
+      <div class="doc-section">
+        <div class="sec-heading"><span class="sec-num">6</span><span class="sec-title">Notes</span></div>
+        ${notesHtml}
+      </div>` : ''}
+
+      ${warnsHtml ? `
+      <div class="doc-section">
+        <div class="sec-heading"><span class="sec-num">7</span><span class="sec-title">Warnings</span></div>
+        ${warnsHtml}
+      </div>` : ''}
+
+      <div class="doc-section">
+        <div class="sec-heading"><span class="sec-num">8</span><span class="sec-title">Revision History</span></div>
+        <table class="rev-table">
+          <thead><tr><th>Version</th><th>Date</th><th>Author</th><th>Changes</th></tr></thead>
+          <tbody>${revRows}</tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <div class="doc-footer">
+      <span>${esc(doc.doc_id || '')} — ${esc(doc.title || '')}</span>
+      <span>Version ${esc(meta.version)} | ${today} | DRAFT</span>
+      <span>Generated by SOP Builder</span>
+    </div>
+  </div>`;
+
+  document.getElementById('doc-output').style.display = 'block';
+}
+
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+function getDocText() {
+  if (!currentDoc) return '';
+  const { doc, meta } = { doc: currentDoc.doc, meta: currentDoc };
+  const d = currentDoc.doc;
+  const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  let txt = `${d.doc_id} — ${d.title || currentDoc.process}\n`;
+  txt += `Version ${currentDoc.version} | ${today} | ${currentDoc.owner}\n`;
+  txt += '='.repeat(60) + '\n\n';
+  txt += `1. PURPOSE\n${d.purpose}\n\n`;
+  txt += `2. SCOPE\n${d.scope}\n\n`;
+  txt += `3. ROLES & RESPONSIBILITIES\n`;
+  (d.roles||[]).forEach(r => { txt += `  • ${r.role}: ${r.responsibilities}\n`; });
+  txt += `\n4. PREREQUISITES\n`;
+  (d.prerequisites||[]).forEach(p => { txt += `  ☐ ${p}\n`; });
+  txt += `\n5. PROCEDURE\n`;
+  (d.steps||[]).forEach(s => { txt += `  Step ${s.number}${s.is_decision?' [DECISION]':''}: ${s.action}\n    Responsible: ${s.responsible_role}\n    Output: ${s.expected_output}\n\n`; });
+  if (d.notes?.length) { txt += `6. NOTES\n`; d.notes.forEach(n => { txt += `  ℹ ${n}\n`; }); txt += '\n'; }
+  if (d.warnings?.length) { txt += `7. WARNINGS\n`; d.warnings.forEach(w => { txt += `  ⚠ ${w}\n`; }); txt += '\n'; }
+  return txt;
+}
+
+function getDocMarkdown() {
+  if (!currentDoc) return '';
+  const d = currentDoc.doc;
+  const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  let md = `# ${d.title || currentDoc.process}\n\n`;
+  md += `**Document ID:** ${d.doc_id} | **Version:** ${currentDoc.version} | **Date:** ${today} | **Owner:** ${currentDoc.owner}\n\n`;
+  md += `---\n\n## 1. Purpose\n\n${d.purpose}\n\n`;
+  md += `## 2. Scope\n\n${d.scope}\n\n`;
+  md += `## 3. Roles & Responsibilities\n\n| Role | Responsibilities |\n|------|------------------|\n`;
+  (d.roles||[]).forEach(r => { md += `| **${r.role}** | ${r.responsibilities} |\n`; });
+  md += `\n## 4. Prerequisites\n\n`;
+  (d.prerequisites||[]).forEach(p => { md += `- [ ] ${p}\n`; });
+  md += `\n## 5. Procedure\n\n| Step | Action | Responsible | Expected Output |\n|------|--------|-------------|------------------|\n`;
+  (d.steps||[]).forEach(s => { md += `| ${s.number}${s.is_decision?' ◆':''} | ${s.action} | ${s.responsible_role} | ${s.expected_output} |\n`; });
+  if (d.notes?.length) { md += `\n## 6. Notes\n\n`; d.notes.forEach(n => { md += `> ℹ️ ${n}\n`; }); }
+  if (d.warnings?.length) { md += `\n## 7. Warnings\n\n`; d.warnings.forEach(w => { md += `> ⚠️ ${w}\n`; }); }
+  return md;
+}
+
+function copyMarkdown() {
+  navigator.clipboard.writeText(getDocMarkdown());
+  flashBtn(event.currentTarget, 'Copied!');
+}
+
+function copyHtml() {
+  const el = document.getElementById('sop-document');
+  if (!el) return;
+  navigator.clipboard.writeText(el.outerHTML);
+  flashBtn(event.currentTarget, 'Copied!');
+}
+
+function downloadTxt() {
+  const txt = getDocText();
+  if (!txt) return;
+  const docId = currentDoc?.doc?.doc_id || 'sop';
+  const blob = new Blob([txt], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${docId.replace(/\s+/g,'-').toLowerCase()}.txt`;
+  a.click();
+}
+
+function printDoc() { window.print(); }
+
+function flashBtn(btn, msg) {
+  const orig = btn.textContent.trim();
+  btn.textContent = msg;
+  setTimeout(() => btn.textContent = orig, 1600);
+}
+
+// Init: set default roles for active industry
+document.getElementById('f-roles').value = 'HR Manager, HR Coordinator, New Employee, IT Administrator, Department Manager';
+</script>
+</body>
+</html>

@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Release Notes Writer</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f7f6f3;
+  --surface: #ffffff;
+  --surface2: #f2f1ee;
+  --border: #e4e2dc;
+  --border2: #d0cec7;
+  --text: #1a1917;
+  --muted: #8a8880;
+  --hint: #b8b6b0;
+  --serif: 'Instrument Serif', Georgia, serif;
+  --mono: 'Geist Mono', monospace;
+  --sans: 'Geist', sans-serif;
+  --new: #166534;
+  --new-bg: #f0fdf4;
+  --new-border: #bbf7d0;
+  --improved: #1e40af;
+  --improved-bg: #eff6ff;
+  --improved-border: #bfdbfe;
+  --fixed: #92400e;
+  --fixed-bg: #fffbeb;
+  --fixed-border: #fde68a;
+  --removed: #5a5754;
+  --removed-bg: #f7f6f3;
+  --removed-border: #e4e2dc;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Shell */
+.shell {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  grid-template-rows: 60px 1fr;
+  min-height: 100vh;
+}
+
+/* Header */
+header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+}
+
+.wordmark {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--text);
+  letter-spacing: -.01em;
+}
+
+.wordmark em { font-style: italic; color: var(--muted); }
+
+.header-divider {
+  width: 1px; height: 18px;
+  background: var(--border);
+}
+
+.header-sub {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+header .spacer { flex: 1; }
+
+.model-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--hint);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* Left panel */
+.panel-left {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.p-section {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.p-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  color: var(--hint);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+/* Metadata row */
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.meta-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 90px 110px;
+  gap: 8px;
+}
+
+input[type="text"], input[type="date"] {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  border-radius: 6px;
+  padding: 8px 10px;
+  outline: none;
+  transition: border-color .15s;
+}
+
+input[type="text"]:focus, input[type="date"]:focus {
+  border-color: var(--text);
+}
+
+input::placeholder { color: var(--hint); }
+
+/* Tone toggle */
+.tone-toggle {
+  display: flex;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.tone-opt {
+  flex: 1;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-family: var(--sans);
+  font-weight: 400;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+}
+
+.tone-opt.active {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 500;
+  border: 1px solid var(--border);
+}
+
+/* Textarea */
+textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.75;
+  border-radius: 6px;
+  padding: 12px;
+  resize: none;
+  outline: none;
+  transition: border-color .15s;
+  height: 220px;
+}
+
+textarea:focus { border-color: var(--text); }
+textarea::placeholder { color: var(--hint); }
+
+/* Samples */
+.sample-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sample-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sample-btn:hover {
+  border-color: var(--border2);
+  color: var(--text);
+  background: var(--bg);
+}
+
+.sample-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Generate */
+.gen-wrap {
+  padding: 16px 24px;
+  margin-top: auto;
+}
+
+#gen-btn {
+  width: 100%;
+  padding: 11px;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+#gen-btn:hover { opacity: .85; }
+#gen-btn:active { transform: scale(.98); }
+#gen-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.spinner {
+  width: 13px; height: 13px;
+  border: 1.5px solid rgba(247,246,243,.3);
+  border-top-color: var(--bg);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: none;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Error */
+.err-msg {
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  color: #c53030;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  margin-top: 10px;
+  display: none;
+}
+
+/* Right panel */
+.panel-right {
+  padding: 40px 48px;
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  gap: 10px;
+}
+
+.empty-rule {
+  width: 40px; height: 1px;
+  background: var(--border2);
+  margin-bottom: 4px;
+}
+
+.empty-state p {
+  color: var(--muted);
+  font-size: 13px;
+  max-width: 240px;
+  line-height: 1.65;
+}
+
+.empty-state .empty-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--hint);
+}
+
+/* Doc output */
+#doc-output { display: none; animation: rise .3s ease; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Release header */
+.rn-header {
+  margin-bottom: 36px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rn-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.rn-product {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.rn-version {
+  font-family: var(--serif);
+  font-size: 32px;
+  color: var(--text);
+  letter-spacing: -.02em;
+  line-height: 1.1;
+}
+
+.rn-date {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.rn-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.act-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 12px;
+  padding: 7px 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.act-btn:hover {
+  color: var(--text);
+  border-color: var(--border2);
+  background: var(--surface2);
+}
+
+.rn-summary {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+/* Tone badge */
+.tone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 20px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: var(--surface2);
+  margin-top: 10px;
+  cursor: default;
+}
+
+/* Category sections */
+.rn-section { margin-bottom: 28px; }
+
+.cat-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.cat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  border: 1px solid;
+}
+
+.cat-new      { color: var(--new);      background: var(--new-bg);      border-color: var(--new-border);      }
+.cat-improved { color: var(--improved); background: var(--improved-bg); border-color: var(--improved-border); }
+.cat-fixed    { color: var(--fixed);    background: var(--fixed-bg);    border-color: var(--fixed-border);    }
+.cat-removed  { color: var(--removed);  background: var(--removed-bg);  border-color: var(--removed-border);  }
+
+.cat-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--hint);
+}
+
+/* Entry list */
+.entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.entry-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: background .12s, border-color .12s;
+  group: entry;
+}
+
+.entry-item:hover {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.entry-bullet {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+
+.b-new      { background: var(--new); }
+.b-improved { background: var(--improved); }
+.b-fixed    { background: var(--fixed); }
+.b-removed  { background: var(--removed); }
+
+.entry-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.6;
+  flex: 1;
+  outline: none;
+  border-radius: 3px;
+  padding: 0 2px;
+  min-height: 22px;
+}
+
+.entry-text:focus {
+  background: #fffde7;
+  box-shadow: 0 0 0 2px #fde68a;
+}
+
+.edit-hint {
+  font-size: 11px;
+  color: var(--hint);
+  font-family: var(--mono);
+  opacity: 0;
+  transition: opacity .15s;
+  flex-shrink: 0;
+  padding-top: 3px;
+  white-space: nowrap;
+}
+
+.entry-item:hover .edit-hint { opacity: 1; }
+
+/* Divider between sections */
+.section-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0 24px;
+}
+
+/* Stats bar */
+.stats-bar {
+  display: flex;
+  gap: 20px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 32px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+.stat-num {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <header>
+    <div class="wordmark">Release<em>Notes</em></div>
+    <div class="header-divider"></div>
+    <div class="header-sub">AI-powered writer</div>
+    <div class="spacer"></div>
+    <div class="model-tag">claude-sonnet-4-20250514</div>
+  </header>
+
+  <!-- Left panel -->
+  <div class="panel-left">
+
+    <div class="p-section">
+      <div class="p-label">Release details</div>
+      <div class="meta-grid" style="margin-bottom:8px;">
+        <input type="text" id="product-name" placeholder="Product name" />
+        <input type="text" id="version" placeholder="v2.4.0" />
+      </div>
+      <input type="text" id="release-date" placeholder="Release date (e.g. April 2026)" style="width:100%;" />
+    </div>
+
+    <div class="p-section">
+      <div class="p-label">Audience tone</div>
+      <div class="tone-toggle">
+        <button class="tone-opt active" id="tone-tech" onclick="setTone('technical')">Technical</button>
+        <button class="tone-opt" id="tone-customer" onclick="setTone('customer')">Customer-facing</button>
+      </div>
+    </div>
+
+    <div class="p-section" style="flex:1;display:flex;flex-direction:column;gap:10px;">
+      <div class="p-label">Raw changelog entries</div>
+      <textarea id="raw-input" placeholder="Paste your raw changes — one per line.
+
+fixed login timeout bug
+added dark mode support
+improved dashboard load time by 40%
+removed legacy v1 API endpoints
+added webhook support for Slack
+fixed CSV export encoding issue
+improved search relevance
+added two-factor authentication"></textarea>
+      <div id="err-msg" class="err-msg"></div>
+    </div>
+
+    <div class="p-section">
+      <div class="p-label">Load a sample</div>
+      <div class="sample-row">
+        <button class="sample-btn" onclick="loadSample('saas')">
+          <span class="sample-dot" style="background:#166534;"></span>
+          SaaS product — mixed release
+        </button>
+        <button class="sample-btn" onclick="loadSample('api')">
+          <span class="sample-dot" style="background:#1e40af;"></span>
+          Developer API — technical release
+        </button>
+        <button class="sample-btn" onclick="loadSample('mobile')">
+          <span class="sample-dot" style="background:#92400e;"></span>
+          Mobile app — customer release
+        </button>
+      </div>
+    </div>
+
+    <div class="gen-wrap">
+      <button id="gen-btn" onclick="generate()">
+        <div class="spinner" id="spinner"></div>
+        <span id="gen-label">Generate release notes</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Right panel -->
+  <div class="panel-right">
+
+    <div class="empty-state" id="empty-state">
+      <div class="empty-rule"></div>
+      <div class="empty-label">Waiting for input</div>
+      <p>Add your raw changelog entries and click generate to produce formatted release notes.</p>
+    </div>
+
+    <div id="doc-output"></div>
+
+  </div>
+</div>
+
+<script>
+let currentTone = 'technical';
+
+const SAMPLES = {
+  saas: {
+    product: 'Workstream',
+    version: 'v3.1.0',
+    date: 'April 2026',
+    entries: `added AI-powered meeting summaries
+added bulk user import via CSV
+improved notification delivery speed by 60%
+improved dashboard load time on mobile
+fixed broken redirect after SSO login
+fixed timezone bug in scheduled reports
+fixed file preview for .xlsx attachments
+removed deprecated /v1/tasks endpoint
+removed legacy email digest format`
+  },
+  api: {
+    product: 'DataBridge API',
+    version: 'v2.0.0',
+    date: 'April 2026',
+    entries: `added GraphQL endpoint support
+added rate limit headers to all responses
+added webhook signature verification
+improved OAuth token refresh flow
+improved pagination performance for large datasets
+fixed race condition in concurrent writes
+fixed memory leak in streaming responses
+fixed incorrect 200 status on partial failures
+removed basic auth support
+removed deprecated query parameter aliases`
+  },
+  mobile: {
+    product: 'Flowly iOS',
+    version: 'v5.2.1',
+    date: 'April 2026',
+    entries: `added dark mode
+added widget support for home screen
+improved app launch time
+improved photo upload quality
+fixed crash when switching accounts
+fixed notifications not clearing after read
+fixed landscape mode layout on iPad
+removed in-app browser for external links`
+  }
+};
+
+function setTone(t) {
+  currentTone = t;
+  document.getElementById('tone-tech').classList.toggle('active', t === 'technical');
+  document.getElementById('tone-customer').classList.toggle('active', t === 'customer');
+}
+
+function loadSample(key) {
+  const s = SAMPLES[key];
+  document.getElementById('product-name').value = s.product;
+  document.getElementById('version').value = s.version;
+  document.getElementById('release-date').value = s.date;
+  document.getElementById('raw-input').value = s.entries;
+  hideErr();
+}
+
+function showErr(msg) {
+  const el = document.getElementById('err-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideErr() { document.getElementById('err-msg').style.display = 'none'; }
+
+function setLoading(on) {
+  const btn = document.getElementById('gen-btn');
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('gen-label').textContent = on ? 'Writing notes...' : 'Generate release notes';
+  btn.disabled = on;
+}
+
+async function generate() {
+  hideErr();
+  const entries = document.getElementById('raw-input').value.trim();
+  if (!entries) { showErr('Please add some changelog entries first.'); return; }
+
+  const product = document.getElementById('product-name').value.trim() || 'Product';
+  const version = document.getElementById('version').value.trim() || '';
+  const date    = document.getElementById('release-date').value.trim() || '';
+
+  setLoading(true);
+
+  const toneInstruction = currentTone === 'technical'
+    ? 'Write for a technical audience (developers, engineers). Keep technical terms like API, OAuth, endpoint, webhook, CLI. Be precise and specific.'
+    : 'Write for a non-technical end-user audience. Avoid jargon. Use plain language. Focus on the user benefit, not the implementation. Example: instead of "fixed OAuth token refresh race condition", write "Fixed an issue that sometimes logged you out unexpectedly."';
+
+  const systemPrompt = `You are an expert technical writer specialising in SaaS release notes.
+
+Given raw changelog entries, do three things:
+1. Categorise each entry into one of: new, improved, fixed, removed
+2. Rewrite each entry as a clean, concise bullet in active voice (start with a verb)
+3. Write a one-sentence summary of the overall release
+
+Tone instruction: ${toneInstruction}
+
+Return ONLY valid JSON — no markdown, no preamble, no explanation. Use this exact schema:
+{
+  "summary": "one sentence summarising the release",
+  "new": ["rewritten entry", ...],
+  "improved": ["rewritten entry", ...],
+  "fixed": ["rewritten entry", ...],
+  "removed": ["rewritten entry", ...]
+}
+
+Only include categories that have entries. Empty arrays are fine if a category has no entries.
+Each entry must start with a capital letter and end without a full stop.
+Keep each entry under 12 words.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `Raw changelog entries:\n${entries}` }]
+      })
+    });
+
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '';
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const doc = JSON.parse(clean);
+    renderDoc(doc, product, version, date);
+  } catch(e) {
+    showErr('Could not generate notes. Check your entries and try again.');
+    console.error(e);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderDoc(doc, product, version, date) {
+  document.getElementById('empty-state').style.display = 'none';
+
+  const cats = [
+    { key: 'new',      label: 'New',      cls: 'cat-new',      bcls: 'b-new'      },
+    { key: 'improved', label: 'Improved', cls: 'cat-improved', bcls: 'b-improved' },
+    { key: 'fixed',    label: 'Fixed',    cls: 'cat-fixed',    bcls: 'b-fixed'    },
+    { key: 'removed',  label: 'Removed',  cls: 'cat-removed',  bcls: 'b-removed'  },
+  ];
+
+  const totalCount = cats.reduce((n, c) => n + (doc[c.key]?.length || 0), 0);
+
+  const sectionsHtml = cats.map(cat => {
+    const items = doc[cat.key] || [];
+    if (!items.length) return '';
+    return `
+      <div class="rn-section">
+        <div class="cat-header">
+          <span class="cat-badge ${cat.cls}">${cat.label}</span>
+          <span class="cat-count">${items.length} ${items.length === 1 ? 'change' : 'changes'}</span>
+        </div>
+        <div class="entry-list">
+          ${items.map(item => `
+            <div class="entry-item">
+              <div class="entry-bullet ${cat.bcls}"></div>
+              <div class="entry-text" contenteditable="true" spellcheck="true">${esc(item)}</div>
+              <div class="edit-hint">click to edit</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }).join('<div class="section-divider"></div>');
+
+  const statsHtml = cats.map(cat => {
+    const n = doc[cat.key]?.length || 0;
+    if (!n) return '';
+    return `<div class="stat-item"><span class="stat-num">${n}</span>${cat.label}</div>`;
+  }).join('') + `<div class="stat-item" style="margin-left:auto;"><span class="stat-num">${totalCount}</span>Total</div>`;
+
+  const toneLabelText = currentTone === 'technical' ? 'Technical audience' : 'Customer-facing';
+
+  const out = document.getElementById('doc-output');
+  out.innerHTML = `
+    <div class="rn-header">
+      <div class="rn-top">
+        <div>
+          <div class="rn-product">${esc(product)}</div>
+          <div class="rn-version">${esc(version) || 'Release Notes'}</div>
+          ${date ? `<div class="rn-date">${esc(date)}</div>` : ''}
+        </div>
+        <div class="rn-actions">
+          <button class="act-btn" onclick="copyMarkdown()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 9H2a1 1 0 01-1-1V2a1 1 0 011-1h6a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            Markdown
+          </button>
+          <button class="act-btn" onclick="copyHtml()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3 3L1 6.5L3 10M10 3L12 6.5L10 10M7 2L6 11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            HTML
+          </button>
+          <button class="act-btn" onclick="downloadTxt()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 10h9M6.5 2v6M4 6l2.5 2.5L9 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            .txt
+          </button>
+        </div>
+      </div>
+      ${doc.summary ? `<div class="rn-summary">"${esc(doc.summary)}"</div>` : ''}
+      <div class="tone-badge">${toneLabelText}</div>
+    </div>
+
+    ${sectionsHtml}
+
+    <div class="stats-bar">${statsHtml}</div>
+  `;
+
+  out.style.display = 'block';
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+function getDocData() {
+  const product = document.getElementById('product-name').value.trim() || 'Product';
+  const version = document.getElementById('version').value.trim() || '';
+  const date    = document.getElementById('release-date').value.trim() || '';
+
+  const cats = [
+    { key: 'new',      label: 'New'      },
+    { key: 'improved', label: 'Improved' },
+    { key: 'fixed',    label: 'Fixed'    },
+    { key: 'removed',  label: 'Removed'  },
+  ];
+
+  const sections = {};
+  document.querySelectorAll('.rn-section').forEach((sec, i) => {
+    const badge = sec.querySelector('.cat-badge');
+    if (!badge) return;
+    const label = badge.textContent.trim();
+    const entries = [...sec.querySelectorAll('.entry-text')].map(el => el.textContent.trim()).filter(Boolean);
+    sections[label] = entries;
+  });
+
+  const summary = document.querySelector('.rn-summary')?.textContent?.replace(/^"|"$/g,'').trim() || '';
+
+  return { product, version, date, summary, sections };
+}
+
+function copyMarkdown() {
+  const { product, version, date, summary, sections } = getDocData();
+  let md = `# ${version ? version + ' — ' : ''}${product} Release Notes\n`;
+  if (date) md += `*${date}*\n`;
+  md += '\n';
+  if (summary) md += `> ${summary}\n\n`;
+
+  for (const [label, entries] of Object.entries(sections)) {
+    if (!entries.length) continue;
+    md += `## ${label}\n\n`;
+    entries.forEach(e => { md += `- ${e}\n`; });
+    md += '\n';
+  }
+
+  copyToClipboard(md, event.currentTarget);
+}
+
+function copyHtml() {
+  const { product, version, date, summary, sections } = getDocData();
+  let html = `<h1>${version ? version + ' — ' : ''}${product} Release Notes</h1>\n`;
+  if (date) html += `<p><em>${date}</em></p>\n`;
+  if (summary) html += `<blockquote><p>${summary}</p></blockquote>\n`;
+
+  for (const [label, entries] of Object.entries(sections)) {
+    if (!entries.length) continue;
+    html += `<h2>${label}</h2>\n<ul>\n`;
+    entries.forEach(e => { html += `  <li>${e}</li>\n`; });
+    html += `</ul>\n`;
+  }
+
+  copyToClipboard(html, event.currentTarget);
+}
+
+function downloadTxt() {
+  const { product, version, date, summary, sections } = getDocData();
+  let txt = `${version ? version + ' — ' : ''}${product} Release Notes\n`;
+  if (date) txt += `${date}\n`;
+  txt += '='.repeat(40) + '\n\n';
+  if (summary) txt += `${summary}\n\n`;
+
+  for (const [label, entries] of Object.entries(sections)) {
+    if (!entries.length) continue;
+    txt += `${label.toUpperCase()}\n`;
+    txt += '-'.repeat(label.length) + '\n';
+    entries.forEach(e => { txt += `• ${e}\n`; });
+    txt += '\n';
+  }
+
+  const blob = new Blob([txt], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `release-notes-${(version || 'latest').replace(/\./g,'-')}.txt`;
+  a.click();
+}
+
+function copyToClipboard(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent.trim();
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.innerHTML = btn.innerHTML, 0);
+    setTimeout(() => { btn.textContent = orig; }, 1600);
+  });
+}
+</script>
+</body>
+</html>
