@@ -774,7 +774,7 @@ Each entry must start with a capital letter and end without a full stop.
 Keep each entry under 12 words.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
