@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HP Docs Assistant</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root {
+    --bg:#0a0e17;--surface:#111827;--surface2:#1a2235;--border:#1e2d45;
+    --accent:#0096d6;--accent2:#00c8f0;--text:#e2eaf8;--text-muted:#5b7499;
+    --text-dim:#8ba4c4;--user-bg:#0f2a45;--bot-bg:#111827;
+    --tag-p:#0d3a5c;--tag-pr:#0d3d30;--tag-pt:#38c5f0;--tag-prt:#2de8a0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);font-family:'IBM Plex Sans',sans-serif;color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+  .logo{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:#fff;flex-shrink:0;}
+  .hinfo{flex:1;}
+  .htitle{font-size:14px;font-weight:600;letter-spacing:-0.01em;}
+  .hsub{font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+  .badges{display:flex;gap:7px;flex-wrap:wrap;}
+  .badge{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:3px 8px;border-radius:4px;border:1px solid;}
+  .badge.p{background:var(--tag-p);color:var(--tag-pt);border-color:rgba(56,197,240,0.3);}
+  .badge.pr{background:var(--tag-pr);color:var(--tag-prt);border-color:rgba(45,232,160,0.3);}
+  .suggs{padding:10px 18px 0;display:flex;flex-wrap:wrap;gap:7px;flex-shrink:0;}
+  .chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 13px;font-size:11.5px;color:var(--text-dim);cursor:pointer;transition:all .15s;white-space:nowrap;}
+  .chip:hover{border-color:var(--accent);color:var(--accent2);background:rgba(0,150,214,0.08);}
+  .chat{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:13px;scroll-behavior:smooth;}
+  .chat::-webkit-scrollbar{width:4px;}
+  .chat::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  .msg{display:flex;gap:9px;animation:fs .25s ease;max-width:100%;}
+  @keyframes fs{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .msg.user{flex-direction:row-reverse;}
+  .av{width:28px;height:28px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+  .av.bot{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
+  .av.you{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);}
+  .bub{max-width:calc(100% - 75px);padding:11px 14px;border-radius:10px;font-size:13.5px;line-height:1.65;}
+  .msg.user .bub{background:var(--user-bg);border:1px solid rgba(0,150,214,0.25);border-radius:10px 2px 10px 10px;}
+  .msg.bot .bub{background:var(--bot-bg);border:1px solid var(--border);border-radius:2px 10px 10px 10px;}
+  .bub p{margin-bottom:7px;}.bub p:last-child{margin-bottom:0;}
+  .bub ul{padding-left:17px;margin-bottom:7px;}.bub li{margin-bottom:3px;}
+  .bub strong{color:var(--accent2);font-weight:600;}
+  .bub code{background:rgba(0,150,214,0.1);border:1px solid rgba(0,150,214,0.2);border-radius:3px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--accent2);}
+  .srctags{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;}
+  .srctag{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:3px 8px;border-radius:4px;display:inline-flex;align-items:center;gap:4px;}
+  .srctag.p{background:var(--tag-p);color:var(--tag-pt);border:1px solid rgba(56,197,240,0.2);}
+  .srctag.pr{background:var(--tag-pr);color:var(--tag-prt);border:1px solid rgba(45,232,160,0.2);}
+  .think{display:flex;align-items:center;gap:5px;padding:10px 14px;background:var(--bot-bg);border:1px solid var(--border);border-radius:2px 10px 10px 10px;font-size:12px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;}
+  .dots span{display:inline-block;width:4px;height:4px;background:var(--accent);border-radius:50%;animation:b 1.2s infinite ease-in-out;}
+  .dots span:nth-child(2){animation-delay:.2s;}.dots span:nth-child(3){animation-delay:.4s;}
+  @keyframes b{0%,80%,100%{transform:scale(.7);opacity:.4}40%{transform:scale(1);opacity:1}}
+  .inp-area{padding:11px 18px 15px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;}
+  .inp-row{display:flex;gap:9px;align-items:flex-end;}
+  .inp-wrap{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;display:flex;align-items:flex-end;transition:border-color .15s;overflow:hidden;}
+  .inp-wrap:focus-within{border-color:var(--accent);}
+  textarea{flex:1;background:transparent;border:none;outline:none;padding:10px 13px;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;resize:none;max-height:110px;min-height:42px;line-height:1.5;}
+  textarea::placeholder{color:var(--text-muted);}
+  .sbtn{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s,transform .1s;}
+  .sbtn:hover{opacity:.9;}.sbtn:active{transform:scale(.96);}.sbtn:disabled{opacity:.4;cursor:not-allowed;}
+  .sbtn svg{width:15px;height:15px;fill:#fff;}
+  .hint{font-size:10px;color:var(--text-muted);margin-top:5px;font-family:'IBM Plex Mono',monospace;}
+  .welcome{text-align:center;padding:24px 16px;animation:fs .4s ease;}
+  .wicon{width:52px;height:52px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:13px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:20px;}
+  .welcome h2{font-size:17px;font-weight:600;margin-bottom:7px;letter-spacing:-.02em;}
+  .welcome p{font-size:12.5px;color:var(--text-dim);line-height:1.6;max-width:340px;margin:0 auto 14px;}
+  .doc-cards{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
+  .dcard{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;text-align:left;max-width:155px;}
+  .dicon{font-size:17px;margin-bottom:5px;}
+  .dtitle{font-size:11px;font-weight:600;margin-bottom:2px;}
+  .ddesc{font-size:10px;color:var(--text-muted);line-height:1.4;}
+  .status-bar{padding:5px 18px;background:rgba(0,150,214,0.06);border-bottom:1px solid var(--border);font-size:10.5px;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);display:flex;gap:14px;flex-shrink:0;}
+  .status-bar span{display:flex;align-items:center;gap:4px;}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--tag-prt);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">HP</div>
+  <div class="hinfo">
+    <div class="htitle">Strings Team — Docs Assistant</div>
+    <div class="hsub">HP Product Overview + Process Documentation (Dune)</div>
+  </div>
+  <div class="badges">
+    <div class="badge p">📄 Product Overview</div>
+    <div class="badge pr">📋 Process Docs</div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <span><div class="dot"></div> Both documents loaded &amp; indexed</span>
+  <span>📄 HP Product Overview — Sections: 11 (Printer types, parts, HP features, languages, functions, how printers work)</span>
+  <span>📋 Process Documentation — Sections: 10 (JIRA, Dune, Codex, String IDs, Workflow, EWS, Closure)</span>
+</div>
+
+<div class="suggs" id="suggs">
+  <div class="chip" onclick="ask('What types of HP printers are available?')">HP printer types</div>
+  <div class="chip" onclick="ask('What is JIRA and how is it used in the Strings team process?')">JIRA workflow</div>
+  <div class="chip" onclick="ask('What is the difference between Inkjet and LaserJet printers?')">Inkjet vs LaserJet</div>
+  <div class="chip" onclick="ask('What is Codex and how do String IDs work?')">Codex & String IDs</div>
+  <div class="chip" onclick="ask('How do I connect a printer to my PC?')">Connect PC to printer</div>
+  <div class="chip" onclick="ask('What is Dune and what UI styles does it support?')">Dune products</div>
+  <div class="chip" onclick="ask('What is the difference between EWS and Control Panel?')">EWS vs Control Panel</div>
+  <div class="chip" onclick="ask('Explain the full String ID approval and review process')">String approval process</div>
+</div>
+
+<div class="chat" id="chat">
+  <div class="welcome" id="wscreen">
+    <div class="wicon">🖨️</div>
+    <h2>HP Docs Assistant</h2>
+    <p>Ask anything about HP printer products or the Strings team's internal processes. Both documents are fully loaded below.</p>
+    <div class="doc-cards">
+      <div class="dcard">
+        <div class="dicon">📄</div>
+        <div class="dtitle">HP Product Overview</div>
+        <div class="ddesc">Printer types, parts, features, connectivity, languages &amp; function sets</div>
+      </div>
+      <div class="dcard">
+        <div class="dicon">📋</div>
+        <div class="dtitle">Process Documentation</div>
+        <div class="ddesc">JIRA, Dune products, Codex, String IDs, Figma review &amp; EWS</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="inp-area">
+  <div class="inp-row">
+    <div class="inp-wrap">
+      <textarea id="qi" placeholder="Ask about printers, String IDs, JIRA, HP features…" rows="1"
+        onkeydown="hk(event)" oninput="ar(this)"></textarea>
+    </div>
+    <button class="sbtn" id="sb" onclick="send()">
+      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+    </button>
+  </div>
+  <div class="hint">Enter to send · Shift+Enter for new line</div>
+</div>
+
+<script>
+// ── FULL DOCUMENT CONTENT EMBEDDED ──
+const DOC1 = `HP PRODUCT OVERVIEW — Complete Content
+
+INTRODUCTION
+Strings Team client: HP Inc. Focus areas: Home Printing Solutions, Graphic Business Solutions, Office Printing Solutions.
+
+WHAT IS A PRINTER
+A printer is a peripheral machine that accepts text and graphics from a computer and transfers the information to paper. It converts digital images and text into physical copies using a driver that converts files into a language the printer can understand. The image or text is recreated on the page using series of miniscule dots.
+
+PRINTER PARTS (Various working parts)
+- Paper support: Supports paper loaded in the sheet feeder
+- Paper stopper upper: Helps load No.10 and DL envelopes correctly
+- Paper stopper lower: Helps load C6 envelopes correctly
+- Edge guides: Help load paper straight; adjust left edge guide to fit paper width
+- Printer cover: Covers printing mechanism; open only when installing/replacing ink cartridges
+- Sheet feeder: Holds blank paper and automatically feeds during printing
+- Automatic roll paper cutter connector: Connects the Automatic Roll Paper Cutter
+- Matte board feeder: Holds CD-R tray and matte board
+- Output tray: Receives ejected paper
+- Output tray extension: Supports ejected paper
+- Hole Punch: Connects the Photo Catcher
+- Print head: Core of inkjet printer; contains nozzles to spray ink drops; delivers ink to page
+- Cartridge cover: Covers ink cartridges; open only when installing/replacing
+- Control panel: Controls various printer functions
+- Adjust lever: Adjusts distance between print head and paper to prevent smearing
+- Roll paper feeder: Holds roll paper; auto-feeds after holding for 3 seconds
+- Roll paper edge guides: Helps load roll paper straight
+- Roll paper holder: Attaches to printer and holds roll paper
+- Roll paper knob: Turn to roll up roll paper
+- USB interface cable connector: Connects USB cable to computer and printer
+- Parallel interface cable connector: Connects parallel cable
+- Power supply: Built into the printer (standard in modern printers)
+- Control circuitry: Controls mechanical aspects and decodes info from computer
+
+PRINTER TYPES
+
+Non-Impact Printers (don't touch paper when creating image):
+- Inkjet Printers: Use series of nozzles to spray drops of ink directly on paper
+- Laser Printers: Use dry ink (toner), static electricity, and heat to place and bond ink onto paper
+- Solid Ink Printers: Contain sticks of wax-like ink melted and applied to paper; ink hardens in place
+- Dye-Sublimation Printers: Long roll of transparent CMYK film; heating element varies temperature; dyes vaporize and permeate paper surface
+- Thermal Wax Printers: Hybrid of dye-sublimation and solid ink; ribbon with CMYK bands; heated pins melt wax onto paper
+- Thermal Autochrome Printers: Color is in paper layers (cyan, magenta, yellow); print head applies specific heat to each layer; passes over paper 3 times
+
+Impact Printers (hit device against inked ribbon):
+- Character Printers (print one character at a time):
+  - Dot Matrix Printer: Print head moves back-and-forth; pins strike ink-soaked ribbon against paper
+  - Daisy-Wheel Printer: Wheel rotates to correct character; hammer strikes character against ribbon
+- Line Printers (print one entire line at a time):
+  - Drum Printer: Rotating drum with raised characters
+  - Chain Printer: Type carried on a continuous chain
+  - Band Printer: Metal band with embossed characters; band spins horizontally
+
+INKJET PRINTER DETAILS
+- An inkjet printer creates physical copies by spraying ionized ink droplets directed by magnetic plates onto paper
+- Resolution: Standard 1200x1440 dpi; high-end up to 5760x1440 dpi
+- Models include scanner, photocopier, dedicated fax machine options
+- Recognizable brands: Epson XP, Canon Pixma, HP DeskJet (home); Canon ImageCLASS, HP OfficeJet (business)
+- Print head has tiny nozzles; as paper moves past print head, nozzles spray ink forming characters and images
+- Inkjet uses liquid ink (colored dye or liquid with solid pigments)
+- Print Head Assembly components: Ink cartridges, Print head stepper motor, Belt, Stabilizer bar, Paper tray/feeder, Rollers, Paper feed stepper motor
+- Technologies:
+  - Thermal Bubble (Canon, HP): Heat vaporizes ink creating bubble; bubble expands pushing ink out nozzle; vacuum pulls more ink; typical bubble jet has 300-600 nozzles
+  - Piezoelectric (Epson): Crystal vibrates when electrically charged; vibrating inward forces ink out; vibrating out pulls more ink in
+- Printing process: Software sends data → driver translates → data goes via USB/parallel → printer stores in buffer (512KB-16MB RAM) → clean cycle → paper feed motor engages → print head stepper motor moves head across page → CMYK colors sprayed → paper advances → head reverses → page complete → head parked
+- Benefits: Easy to use, low cost, high quality output, vivid color, reasonably fast, no warm-up time, quieter than dot matrix
+- Limitations: Ink takes time to dry, print head prone to clogging and damage, slow for high-volume, expensive long-term operation
+
+LASERJET PRINTER DETAILS
+- Uses laser beam, drum, and toner (fine powder of solid particles)
+- Non-impact photocopier technology; no keys strike paper
+- Types: Monochrome Laser, Colour Laser, Compact Laser, Multifunctional Laser
+- Functionality: Drum charged → laser/LED shines image outline onto drum → toner attracted to uncharged areas → rollers transfer powder from cartridge → paper meets drum → toner transferred to page → paper through fuser unit (heat+pressure) → toner melted and stuck to page
+- LaserJet print head structure: Laser Diode, Photoconductor Drum (coated with photosensitive material), Developer Unit (applies toner), Transfer Roller (transfers toner to paper), Fuser Unit (heat and pressure to bond toner)
+- Advantages: High printing speed, less noisy, ability to load large sheets, no splatter, double-sided printing, better resolution, toner cartridges easy to maintain, cost-effective for large volumes, duplex printing, scanning, wireless connectivity
+
+INKJET VS LASERJET COMPARISON
+1. Inkjet produces copies by jetting ink | LaserJet uses laser and electrical charge model
+2. Inkjet is more affordable | LaserJet is expensive
+3. Inkjet has nozzle for spraying | LaserJet has no nozzle
+4. Inkjet has liquid ink in cartridges; can dry out | LaserJet ink is powder; no drying issue
+5. Inkjet needs frequent refill | LaserJet refill less frequent
+6. Examples: HP DeskJet 1112, Epson L361 | Examples: HP LaserJet printer
+
+HOW TO CONNECT PC TO PRINTER
+
+Basic Requirements: printer + computer, power cable, printer documentation and drivers, administrator access, stable work surface
+
+For Wired (USB): High-quality USB cable, available USB port, USB hub if needed, network cable for ethernet
+For Wireless: Active wireless network, SSID and password, router with WPS (optional), strong Wi-Fi signal at printer location
+
+USB Connection Process:
+- Preparation: Ensure printer powered on, close all applications, log in with administrator rights, locate USB ports
+- Connection: Connect USB to printer first, then to computer, wait for device recognition, follow on-screen prompts, install drivers if needed
+- Driver installation: Allow automatic installation or download latest drivers, run as administrator, accept security prompts
+
+Wireless Connection Process:
+- Network Preparation: Verify compatibility, check signal strength, note credentials, enable WPS if available
+- Printer Configuration: Access wireless setup menu, select network connection type, choose SSID, enter password, verify success
+- Computer Configuration: Open printer settings, add new printer, select wireless printer, install network drivers, test connection
+
+Network Printer Connection (office/shared):
+- Infrastructure: Ethernet availability, DHCP server, network printer policies, print server if used
+- Physical Connection: Connect network cable, verify link lights, obtain IP address
+- Printer Configuration: Set static IP if needed, configure network protocols, set security options, enable printer sharing, configure access controls
+
+HP PRINTERS
+HP (Hewlett-Packard) is a leading manufacturer known for reliability, efficiency, and innovation.
+
+Types of HP Printers:
+- Inkjet Printers: Ideal for home and small office; high-quality color and B&W
+- Laser Printers: Best for businesses requiring fast, cost-effective printing for large volumes
+- All-in-One (AIO) Printers: Combines printing, scanning, copying, and faxing
+- Photo Printers: For professional and high-quality photo printing
+- Large Format & Industrial Printers: Posters, banners, commercial applications
+
+Key Features: HP Smart App, Wireless & Bluetooth Connectivity, HP Instant Ink Subscription, Energy-efficient & Eco-friendly, Advanced Security Features (HP Wolf Security)
+
+Key Points:
+- Duplex/Simplex: Both supported through driver settings; Pro Select (Zelus), Workflow UI (Jupiter), LFP (Ulysses) all support duplex
+- ADF (Automatic Document Feeder): Pro Select (Zelus/Ulysses) and Workflow UI (Jupiter/Beam SF) don't have ADF; LFP models support ADF with single-sided (simplex) scanning
+- Connectivity: USB (direct), Wi-Fi (wireless), Ethernet (network), Bluetooth, Wi-Fi Direct, HP Smart App
+- Print Technology: IIC (Inkjet Industrial Color) for Pro Select (Zelus) and Jupiter models
+- Tray: Pro Select and Workflow UI = 3 trays; LFP = 1 tray
+- Photo Tray: Holds small photo paper (4x6 or 5x7 inches); common in Pro Select, LFP, Workflow UI
+- ADF Sensor: Checks paper placement, prevents jams; helpful in Pro Select, LFP, Workflow UI
+- Scanner Glass: Most Pro Select and Workflow UI lack this; LFP and Enterprise models support it
+- USB host (USB Print): Holds paper for printing
+- Rear USB host (Job Storage): Save print jobs for later/secure printing; supported in ProSelect (Zelus) and Workflow UI (Ulysses); NOT in LFP (Jupiter)
+- External Keyboard: Supports shortcuts like print (Ctrl+P) or copy (Ctrl+C)
+- Fax: Send/receive via phone line; supported in ProSelect (Zelus), Workflow UI (Ulysses), LFP (Jupiter)
+- Ethernet: Cable-based network connection; multiple devices can share printer
+- Wireless LED: Wireless printing/scanning from anywhere
+- Bluetooth: Wireless printing when Wi-Fi unavailable; supports Move and Cut feature
+- Cartridges/Toner Order: Check levels via HP Smart app or Instant Ink; find cartridge type in printer manual
+- Finisher: Staple, hole-punch, fold, or stack papers after printing
+- ADF Sheets: Holds 20 to 100 sheets depending on model
+- Fax contacts: Save contacts in memory for quick faxing
+- Instant Ink: Auto-order ink via HP Smart app; even during large print jobs
+- HP+ (Yeti): Move and Cut tools (crop/rearrange pages), cloud printing, security, Instant Ink support
+- PaaS: Cloud-based tools for remote printing and cutting task management
+- Job Concurrency: Handle multiple tasks simultaneously (print + scan at same time)
+- Pen Alignment: Printhead alignment for sharp accurate prints; done during setup or after cartridge change
+
+DETAILED LANGUAGE INFORMATION
+HP printers support country-specific settings: date formats (DDMMMYYYY / MMMDDYYYY / YYYYMMMDD), time formats (12hr/24hr), measurement (METRIC/US), paper standards (ISO/ANSI).
+Countries include Afghanistan through Zimbabwe — comprehensive global coverage.
+
+LANGUAGES SUPPORTED (with business units):
+Arabic (HPS, OPS Enterprise, OPS Pro), Indonesian (OPS Enterprise, OPS Pro), Basque (OPS Enterprise), Bulgarian (HPS, OPS Enterprise), Catalan (OPS Enterprise, OPS Pro, GSB), Simplified Chinese (HPS, OPS Enterprise, OPS Pro, GSB), Traditional Chinese (HPS, OPS Enterprise, OPS Pro, GSB), Croatian (HPS, OPS Enterprise, OPS Pro), Czech (HPS, OPS Enterprise, OPS Pro), Danish (HPS, OPS Enterprise, OPS Pro), Dutch (HPS, OPS Enterprise, OPS Pro, GSB), English (HPS, OPS Enterprise, OPS Pro, GSB), Finnish (HPS, OPS Enterprise, OPS Pro), French (HPS, OPS Enterprise, OPS Pro, GSB), German (HPS, OPS Enterprise, OPS Pro, GSB), Greek (HPS, OPS Enterprise, OPS Pro), Hebrew (HPS, OPS Enterprise, OPS Pro), Hungarian (HPS, OPS Enterprise, OPS Pro), Italian (HPS, OPS Enterprise, OPS Pro, GSB), Japanese (HPS, OPS Enterprise, OPS Pro, GSB), Korean (HPS, OPS Enterprise, OPS Pro, GSB), Norwegian (HPS, OPS Enterprise, OPS Pro), Polish (HPS, OPS Enterprise, OPS Pro, GSB), Portuguese (HPS, OPS Enterprise, OPS Pro, GSB), Romanian (HPS, OPS Enterprise, OPS Pro), Russian (HPS, OPS Enterprise, OPS Pro, GSB), Slovak (HPS, OPS Enterprise, OPS Pro), Slovenian (HPS, OPS Enterprise, OPS Pro), Spanish (HPS, OPS Enterprise, OPS Pro, GSB), Swedish (HPS, OPS Enterprise, OPS Pro, GSB), Thai (OPS Enterprise, OPS Pro), Turkish (HPS, OPS Enterprise, OPS Pro), Ukrainian (HPS, OPS Pro), Vietnamese (OPS Enterprise), Welsh (OPS Enterprise)
+
+FUNCTION SETS:
+Business Units: OPS=Office Printing (LaserJet/DesignJet, e.g. Beam, Sunspot, Jupiter, Ray, Flare, Titania), HPS=Home Printing (compact, e.g. Victoria), GSB=Graphics Solutions (wide-format, e.g. Sunspot HP Latex, Altair)
+Paper size: A4, A3, Single Roll, Multi Roll
+Color: Mono, Color 1 Part (ink+head combined), Color 2 Part (separate cartridges), Color P-T (toner+drum), Reservoir (built-in ink tanks), Eco-Carton, None
+SFP=print only; MFP=print+scan+copy+fax; Network Scanner=scan and send over network
+Print Engines: LaserJet, Ink, Ink PDL, Dragon Laser Jet, DesignJet, Latex, PageWideXL, Stitch, None (scanners)
+Displays: 2.4", 2.7", 4.3", 8", 10.1", 16", 23", ProSelect Low, ProSelect Mid, Casual, None
+UI Styles: Spice (required for Dune), Windjammer (legacy), Opus (legacy)
+Finishers: None, Staplers, Stacker, MultiBin, Mailbox (legacy), Hole Punch, Booklet Maker, Folder, Sheet Inserter (legacy), High Capacity Stacker, Stapler Stacker, Generic Output, Vertical Trimmer, Basket
+Scanners: No Scanner (SFP), Any Scanner (MFP), iProwler, iGrowler, Prowler, Growler, Tarot (legacy), sGX/GX, LX/sGX, Vivace (legacy), Valiant, Piledriver, Nisca (legacy), Flatbed, LightWing, LFP Candela
+OEM: HP vs OEM (third-party)
+Enterprise vs Non-Enterprise (scanner configurations)
+
+HP PRINTER FEATURE DETAILS (Annexure 1)
+Printing Technology: Inkjet, Laser, Thermal & Large Format
+Connectivity: Wi-Fi & Wi-Fi Direct, Bluetooth, USB & Ethernet, Cloud & Mobile (HP Smart App, Apple AirPrint, Google Cloud Print, Mopria)
+Multifunction: All-in-One, ADF, Duplex Printing
+Smart Features: HP Smart App, Voice (Alexa + Google Assistant), HP Instant Ink, HP Wolf Security
+Print Quality: High DPI up to 4800x1200, speed 10-40 ppm, Borderless Printing
+Eco: Energy Star, Auto On/Off, Recyclable Cartridges, Planet Partners recycling, Eco-Friendly Ink & Toner
+
+HP Product Lines:
+- Inkjet: HP DeskJet, HP Envy, HP Smart Tank, HP OfficeJet
+- Laser: HP LaserJet, HP Neverstop, HP Enterprise Laser
+- All-in-One: HP OfficeJet Pro, HP Envy, HP LaserJet Pro MFP
+- Photo: HP Sprocket, HP Tango
+- Large Format: HP DesignJet, HP PageWide XL
+- Industrial/Commercial: HP Indigo, HP Latex, HP Scitex, HP 3D Printing
+
+HP Computing & Enterprise Solutions also documented: Laptops (Pavilion, Spectre, EliteBook), Desktops (Pavilion, Omen, EliteDesk), Servers (ProLiant), Cloud (HPE GreenLake), Networking (HPE Aruba), Security (HP Wolf Security, HP Sure Click)
+
+HOW PRINTERS WORK (Annexure 2)
+Inkjet process: Ink cartridge/tank supplies printhead → printhead moves across page at high speed → thousands of tiny drops sprayed → page moves under printhead → ejected to output tray. Parts: Print Head, Ink Cartridges, Print Head Stepper Motor, Belt, Stabilizer Bar, Rollers, Paper Feed Stepper Motor.
+
+Laser process: Laser projects print onto drum → drum uses static electricity to attract dry toner → drum rolls toner onto paper → fuser melts and presses toner with heat → print exits. Parts: Toner Cartridge, Drum Unit, Laser, Transfer Belt, Fuser Unit.
+
+Dot Matrix process: Listing paper fed through steel roller → printhead scans across page → pins impact ribbon to press dots → paper feeds through → listing paper exits. Parts: Ink Ribbon, Pins, Printhead, Print wires, Listing Paper, Solenoid.
+
+Solid Ink process (Xerox, discontinued 2016): Heater melts wax → text/image projected onto drum → melted wax dropped through printhead onto drum → paper passes under drum → print comes out. Parts: Ink Sticks, Heated Printhead, Drum unit, Ink-jets.
+
+Thermal process (2 types: Thermal Transfer and Direct Thermal): Thermal paper loaded → heated pins drag across paper → pin contact changes paper color → print exits. Parts: Thermal paper/labels, Heated Printhead, Thermal Ribbon (for Transfer), Printhead pins. Used for: label printing, mobile receipt printers, portable photo printers.
+
+HOW TO PRINT FROM COMPUTER (Annexure 3)
+1. Ensure printer is connected and turned on (USB or same Wi-Fi network)
+2. Update printer drivers
+3. Open the document (PDF, Word, Pages, pictures, etc.)
+4. Press Cmd+P (Mac) / Ctrl+P (Windows) or click File → Print
+5. Select your printer from the Printer drop-down
+6. Select number of copies
+7. Click Show Details to expand: Pages (All or specific), Paper size (scale margins), Orientation (vertical/horizontal), Number of sides (single or double-sided)
+8. Click Print — document begins printing`;
+
+const DOC2 = `STRINGS PROCESS DOCUMENTATION (DUNE) — Complete Content
+
+INTRODUCTION
+Strings Team manages UI text content, EWS content, and Design review across various HP products. Creates and manages String IDs and event codes. Client: HP Inc.
+
+PREFACE — DUNE
+Dune: HP printer program that includes both SFP (Single-functional printer) and MFP (Multi-functional printer).
+Three different UI (User Interface) styles in HP printers:
+- Workflow UI
+- Hybrid UI
+- Pro-select
+Style/UI: Spice must be enabled for Dune Printers.
+Business Units: OPS, GSB, HPS — DUNE products will adopt OPS, HPS, and GSB UI style.
+
+JIRA
+Jira is a versatile project management and issue tracking software by Atlassian. Originally launched as a bug tracking tool.
+Core concepts:
+- Projects: Containers for issues, representing different teams, products, or initiatives
+- Issues: Individual pieces of work (tasks, bugs, user stories)
+- Workflows: Defined sequences of steps that issues follow from creation to completion
+- Boards: Visual representations (Scrum) of work in progress for tracking and management
+- Sprints: Time-boxed periods in which specific work must be completed and made ready for review
+
+CODEX
+Codex is an internal CMS (Content Management System) tool where string writers create String IDs.
+- String writer can create String IDs from the Strings options in the Codex tool
+- The String IDs requirement will be received from the UX designer in the form of a Figma document
+
+PROCESS OVERVIEW (Full Step-by-Step)
+1. System Engineer or Program Team initiates the process by creating an Epic for each feature and breaking it down into individual stories for relevant teams: Design, Strings, and Graphics
+2. Strings Lead receives the requirement as a string-related story or bug on the JIRA dashboard and assigns it to a String Writer
+3. String Writer reviews the Epic, Design, and String stories to gather and understand the requirements
+4. If there are questions regarding String IDs, String Writer consults with the Designer
+5. Designer updates the design and English content, adding or modifying Wiki links or images in the Epic or Story as needed
+6. Based on updated design, String Writer creates or updates strings in DUNE Codex
+7. String Writer then: (a) adds String IDs and spreadsheet links in a JIRA comment, (b) assigns the story to the String Approver, (c) adds a String Approval Request comment along with current string status
+8. String Approver reviews all String ID content in context of functional screens in the design
+9. Once approved, strings are sent for integration every Wednesday
+10. After all String IDs are approved, Strings Team generates untranslated strings from DUNE Codex as .xml files (one per language) and sends them to Localization Team on scheduled basis (approximately every 3 weeks)
+
+PRODUCT OVERVIEW — DUNE PRODUCTS
+Dune is the HP printer program name including both SFP and MFP in DUNE products.
+- Dune Products: SFP (Single-functional) and MFP (Multi-functional)
+- UI styles: Workflow UI (e.g. Jupiter), Hybrid UI, Pro-select (e.g. Zelus, Ulysses)
+
+DIFFERENCE BETWEEN WORKFLOW UI & HYBRID UI & PRO-SELECT
+- Pro-Select (Zelus, Ulysses): Enterprise-grade printers with Pro-select UI
+- Workflow UI (Jupiter): Standard office workflow printers
+- Hybrid UI: Combination of both UI approaches
+- LFP (Large Format Printer): Ulysses — large format printing
+
+ASSETS FOR PRO-SELECT, HYBRID & WORKFLOW UI
+Each UI type has specific design assets and Figma templates. String writers use corresponding Figma files for each UI type when reviewing and creating String IDs.
+
+DIFFERENCE BETWEEN ENTERPRISE AND NON-ENTERPRISE
+- Enterprise: Higher security, advanced management features, scalable for large organizations, business-grade performance
+- Non-Enterprise: Simpler functionality for home, SOHO (Small Office/Home Office), or SMB (Small and Medium Business) use cases
+
+EWS (EMBEDDED WEB SERVER) vs CONTROL PANEL
+EWS (Embedded Web Server):
+- Browser-based access to printer settings remotely via printer's IP address
+- Used for admin-level configuration (network settings, security, print queues)
+- Accessible from any device on the same network via browser
+- IT admins use it to configure and manage printers remotely
+
+Control Panel (on the device):
+- Physical touch/button interface directly on the printer hardware
+- For direct end-user interactions (starting print/copy/scan jobs, checking status)
+- Provides immediate access without needing network/computer
+
+Differences between EWS and CP:
+- EWS is remote/web-based; Control Panel is physical/on-device
+- EWS for admin configuration; Control Panel for end-user daily use
+- EWS requires network access; Control Panel is always available at device
+
+DESIGN AND STRING REVIEWER INTERACTION
+String Writer reviews design in Figma → raises questions with Designer → Designer updates design and English content → String Writer creates/updates strings based on updated Figma design.
+
+MAIL REQUEST
+Team sends mail requests for specific string-related communication, requirement updates, and notifications.
+
+REQUIREMENT START PROCESS
+
+JIRA Dashboard Login: Log in to JIRA dashboard to view assigned stories and bugs.
+
+JIRA Start Process: Review the JIRA ticket, understand requirements, begin work on String IDs.
+
+JIRA Checkpoints:
+- Status: Tracks progress of story/bug through workflow stages (Open, In Progress, Under Review, Done/Closed)
+- Story Points: Estimation of work complexity and effort required
+- Comments: Communication and updates on the JIRA ticket between team members
+- Products: Which HP products are affected by this story/bug
+- Fix Version: Target release version for the fix or feature
+- Sprint: Time-boxed work cycle the task belongs to
+
+JIRA Attributes:
+- Epic: Large feature container (e.g., a whole printer feature); contains multiple stories
+- Story: Individual requirement unit; the main deliverable for the strings team
+- Bug: Defect or issue to be fixed in existing string content
+- Spike: Research/investigation task with a time-box; used when requirements are unclear
+- Sub-Tasks: Breakdown of stories into smaller pieces
+  - Sub-Task Execution: The actual work tasks within a story
+  - Sub-Task Types and Reviews: Different review stages (String Review, Design Review, etc.)
+
+GUIDELINES: Follow team guidelines for JIRA usage throughout the process.
+
+WORKFLOW REVIEW PROCESS (Section 3)
+1. Figma Review: String Writer reviews all design screens in Figma; verifies string placement and context
+2. String Review Spreadsheet: Updates the String Review Spreadsheet with current string status, comments, and any issues
+3. IA (Information Architecture): Reviews IA document to verify correct information architecture for string placement
+4. Design Approval: Obtains final approval from design team before creating String IDs
+5. Guidelines: Follow workflow review guidelines throughout the process
+
+STRINGS (Section 4)
+
+Rosetta & Codex:
+- Rosetta: String management system
+- Codex: Internal CMS where String IDs are created and managed
+
+String ID Naming Rules:
+- Follow structured naming conventions for all String IDs
+- Names must be consistent and follow the team's established patterns
+
+How to Search a String ID or English: Search by String ID number or by English text content in Codex.
+
+Creating/Updating String IDs:
+- When to create a String ID: When new UI text is needed that doesn't exist yet
+- When to revise a String ID: When existing UI text needs to be updated or changed
+- When to add a String Value: When adding a new value to an existing multi-value string
+- Multi-value string: A string that has multiple possible display values
+
+Parts of a String ID:
+- String ID: Unique identifier for the string
+- English: The actual English text/value of the string
+- Business Unit: Which business unit this string belongs to (OPS, HPS, or GSB)
+- Internal Comments: Notes for internal team reference (not visible to end users)
+- Translator Notes: Guidance and context provided to the localization/translation team
+- Sizing: Character count and display size constraints for the string
+- History: Change log showing all modifications made to the string over time
+- Foreign Languages: Localized translations of the string in various languages
+- Function Sets: Which printer functions/features use this string
+- String by Product: Which specific HP products use this string
+- Fn set: Function set categorization
+- Others sections: Additional categorization fields
+
+OEM: HP-branded strings vs OEM (third-party manufacturer) string variants.
+Special Characters: Handled according to team guidelines.
+Event codes and SR bits: Associated with specific actions or screens on the printer.
+Animations: Strings that are associated with animated screens or transitions.
+Section 8.10 Guidelines: Comprehensive guidelines for string creation, naming, and management.
+
+REQUIREMENT CLOSURE PROCESS (Section 5)
+When to close the requirement:
+- All String IDs have been approved by String Approver
+- Strings have been integrated (every Wednesday)
+- Localization strings (.xml files) have been sent to Localization Team
+
+Additional JIRA info before closure: Update Story Points, Sprint assignment, Resolution field.
+Checklist: Verify all tasks are complete before closing.
+JIRA Closure Mail: Send closure notification email to all relevant stakeholders.
+
+DUNE OVERALL GUIDELINES (Section 10)
+Comprehensive guidelines covering String IDs, JIRA usage, Codex practices, review workflows, and overall Dune project management.
+
+HOW TO WORK WITH STORIES AND BUGS (Section 11)
+
+Simple Story (e.g., DUNE-256479, DUNE-257541):
+Standard story with basic string creation workflow. String Writer receives story → reviews Figma → creates String IDs in Codex → gets approval → integrates.
+
+Critical Story (e.g., DUNE-241635):
+High-priority story requiring extra review steps, more stakeholder involvement, and potentially tighter deadlines. Requires additional approvals.
+
+Simple Bug (e.g., DUNE-220583):
+Basic bug fix for an existing string issue. String Writer identifies the incorrect string → updates in Codex → gets approval → integrates fix.
+
+Localization Bug (e.g., DUNE-197420):
+Bug specifically related to translated or foreign language content. May require coordination with Localization Team. The English source may be correct but translation has issues.
+
+EWS Story (e.g., DUNE-244337):
+Story specifically related to Embedded Web Server (EWS) UI strings. Different design context from control panel strings; requires reviewing EWS-specific Figma screens.
+
+Animation Story (e.g., DUNE-255848):
+Story involving strings that appear on animated screens or transitions. Requires additional consideration for timing, length constraints, and animation context.`;
+
+const SYSTEM = `You are a knowledgeable internal documentation assistant for the HP Strings Team. You have been loaded with the complete, word-for-word content of two HP internal documents.
+
+DOCUMENT 1 — HP Product Overview (variable: DOC1):
+Covers: printer types and how they work, printer parts, inkjet vs laserjet details, how to connect printer to PC, HP printer types and features, language support per country, function sets (business units, paper size, color types, print engines, displays, scanners, finishers), HP product lines (DeskJet, LaserJet, OfficeJet, Envy etc.), printing from a computer.
+
+DOCUMENT 2 — Strings Process Documentation/Dune (variable: DOC2):
+Covers: JIRA (projects, epics, stories, bugs, spikes, sub-tasks, checkpoints), Codex (internal CMS for String IDs), Dune products (SFP/MFP, Workflow UI/Hybrid UI/Pro-select), String ID structure and lifecycle (create/revise/approve), EWS vs Control Panel, Figma review process, String Review Spreadsheet, IA review, requirement start-to-closure process, how to work with Simple/Critical/Bug/Localization/EWS/Animation story types.
+
+RULES:
+1. Answer ONLY from the two documents provided. If something is not in the docs, say: "This is not covered in the provided documentation."
+2. Be concise: give a direct answer first, then bullet-point details.
+3. Use **bold** for key terms.
+4. At the END of your response on its own line, write exactly: SOURCES:[p] or SOURCES:[pr] or SOURCES:[p,pr] where p = HP Product Overview, pr = Process Documentation.
+5. Keep responses clear and helpful for internal team members.`;
+
+let loading = false, history = [], wShown = true;
+const chat = document.getElementById('chat');
+const qi = document.getElementById('qi');
+const sb = document.getElementById('sb');
+
+function ar(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight,110)+'px'; }
+function hk(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();} }
+function ask(t) { qi.value=t; ar(qi); send(); }
+
+function hideWelcome() {
+  if(wShown){
+    const w = document.getElementById('wscreen');
+    if(w) w.remove();
+    document.getElementById('suggs').style.display='none';
+    wShown = false;
+  }
+}
+
+function addMsg(role, html, srcs) {
+  hideWelcome();
+  const m = document.createElement('div');
+  m.className = 'msg ' + role;
+  const av = document.createElement('div');
+  av.className = 'av ' + (role==='bot'?'bot':'you');
+  av.textContent = role==='bot'?'AI':'YOU';
+  const b = document.createElement('div');
+  b.className = 'bub';
+  b.innerHTML = html;
+
+  if(role==='bot' && srcs && srcs.length>0) {
+    const td = document.createElement('div');
+    td.className = 'srctags';
+    srcs.forEach(s => {
+      const t = document.createElement('span');
+      t.className = 'srctag ' + (s==='p'?'p':'pr');
+      t.textContent = s==='p' ? '📄 HP Product Overview' : '📋 Process Documentation';
+      td.appendChild(t);
+    });
+    b.appendChild(td);
+  }
+  m.appendChild(av); m.appendChild(b);
+  chat.appendChild(m);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addThink() {
+  hideWelcome();
+  const m = document.createElement('div');
+  m.className='msg bot'; m.id='tm';
+  const av=document.createElement('div'); av.className='av bot'; av.textContent='AI';
+  const t=document.createElement('div'); t.className='think';
+  t.innerHTML='<span>Searching documents</span><div class="dots"><span></span><span></span><span></span></div>';
+  m.appendChild(av); m.appendChild(t);
+  chat.appendChild(m);
+  chat.scrollTop=chat.scrollHeight;
+}
+function rmThink(){const e=document.getElementById('tm');if(e)e.remove();}
+
+function parseSrc(txt) {
+  const m = txt.match(/SOURCES:\[([^\]]*)\]/);
+  if(!m) return [];
+  return m[1].split(',').map(s=>s.trim()).filter(s=>s==='p'||s==='pr');
+}
+
+function fmt(txt) {
+  txt = txt.replace(/SOURCES:\[[^\]]*\]/g,'').trim();
+  txt = txt.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  txt = txt.replace(/`([^`]+)`/g,'<code>$1</code>');
+  const lines = txt.split('\n');
+  let html='', inList=false;
+  for(let ln of lines){
+    ln = ln.trim();
+    if(!ln){if(inList){html+='</ul>';inList=false;}continue;}
+    if(ln.startsWith('- ')||ln.startsWith('• ')){
+      if(!inList){html+='<ul>';inList=true;}
+      html+=`<li>${ln.slice(2)}</li>`;
+    } else {
+      if(inList){html+='</ul>';inList=false;}
+      html+=`<p>${ln}</p>`;
+    }
+  }
+  if(inList) html+='</ul>';
+  return html;
+}
+
+async function send() {
+  const q = qi.value.trim();
+  if(!q||loading) return;
+  loading=true; sb.disabled=true;
+  qi.value=''; qi.style.height='auto';
+  addMsg('user',`<p>${q.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>`);
+  addThink();
+  history.push({role:'user',content:q});
+
+  // ▼▼▼ PASTE YOUR ANTHROPIC API KEY BELOW (replace the text inside the quotes) ▼▼▼
+  const API_KEY = 'YOUR_API_KEY';
+  // ▲▲▲ ONLY CHANGE THE LINE ABOVE ▲▲▲
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-5',
+        max_tokens:1000,
+        system: SYSTEM + '\n\n--- DOCUMENT 1 CONTENT ---\n' + DOC1 + '\n\n--- DOCUMENT 2 CONTENT ---\n' + DOC2,
+        messages: history
+      })
+    });
+    const d = await res.json();
+    if(d.error) {
+      rmThink();
+      addMsg('bot',`<p>⚠️ <strong>API Error:</strong> ${d.error.message}</p>`,[]);
+      history.pop();
+    } else {
+      const raw = d.content?.[0]?.text || 'Sorry, no response received.';
+      history.push({role:'assistant',content:raw});
+      rmThink();
+      addMsg('bot', fmt(raw), parseSrc(raw));
+    }
+  } catch(err) {
+    rmThink();
+    addMsg('bot',`<p>⚠️ <strong>Connection error:</strong> ${err.message}. Check your API key and network.</p>`,[]);
+    history.pop();
+  }
+  loading=false; sb.disabled=false; qi.focus();
+}
+</script>
+</body>
+</html>
