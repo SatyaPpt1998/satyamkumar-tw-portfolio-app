@@ -1,6 +1,5 @@
-// netlify/functions/claude.js
+// netlify/functions/cloud.js
 // Secure proxy — your API key never touches the browser
-
 exports.handler = async (event) => {
 
   // Only allow POST
@@ -11,9 +10,9 @@ exports.handler = async (event) => {
     };
   }
 
-  // CORS headers — allow your Netlify domain only in production
+  // CORS headers
   const headers = {
-    'Access-Control-Allow-Origin': '*',   // change to your domain e.g. 'https://yoursite.netlify.app'
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json'
   };
@@ -34,7 +33,7 @@ exports.handler = async (event) => {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model:      body.model      || 'claude-sonnet-4-20250514',
+        model:      'claude-sonnet-4-5',          // ✅ fixed model name
         max_tokens: body.max_tokens || 1000,
         system:     body.system     || '',
         messages:   body.messages   || []
