@@ -635,30 +635,27 @@ async function send() {
   addThink();
   history.push({role:'user',content:q});
   
-const res = await fetch('/.netlify/functions/cloud', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
+const API_KEY = 'PASTE YOU KEY';
+
+const res = await fetch('/.netlify/functions/cloud',{
+  method:'POST',
+  headers:{
+    'Content-Type':'application/json',
+    'x-api-key': API_KEY,
+    'anthropic-version':'2023-06-01',
+    'anthropic-dangerous-direct-browser-access':'true'
   },
-  body: JSON.stringify({
-    max_tokens: 1000,
-    system:
-      SYSTEM +
-      '\n\n--- DOCUMENT 1 CONTENT ---\n' +
-      DOC1 +
-      '\n\n--- DOCUMENT 2 CONTENT ---\n' +
-      DOC2,
+  body:JSON.stringify({
+    model:'claude-sonnet-4-5',
+    max_tokens:1000,
+    system: SYSTEM + '\n\n--- DOCUMENT 1 CONTENT ---\n' + DOC1 + '\n\n--- DOCUMENT 2 CONTENT ---\n' + DOC2,
     messages: history
   })
 });
     const d = await res.json();
-    if (d.error) {
+    if(d.error) {
   rmThink();
-  addMsg(
-    'bot',
-    `<p>⚠️ <strong>API Error:</strong> ${d.error}</p>`,
-    []
-  );
+  addMsg('bot',`<p>⚠️ <strong>API Error:</strong> ${d.error.message}</p>`,[]);
   history.pop();
 } else {
       const raw = d.content?.[0]?.text || 'Sorry, no response received.';
