@@ -634,30 +634,33 @@ async function send() {
   addMsg('user',`<p>${q.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>`);
   addThink();
   history.push({role:'user',content:q});
-  
-const API_KEY = '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';
 
-const res = await fetch('https://api.anthropic.com/v1/messages',{
-  method:'POST',
-  headers:{
-    'Content-Type':'application/json',
-    'x-api-key': API_KEY,
-    'anthropic-version':'2023-06-01',
-    'anthropic-dangerous-direct-browser-access':'true'
-  },
-  body:JSON.stringify({
-    model:'claude-sonnet-4-5',
-    max_tokens:1000,
-    system: SYSTEM + '\n\n--- DOCUMENT 1 CONTENT ---\n' + DOC1 + '\n\n--- DOCUMENT 2 CONTENT ---\n' + DOC2,
-    messages: history
-  })
-});
+  // ▼▼▼ PASTE YOUR ANTHROPIC API KEY BELOW (replace the text inside the quotes) ▼▼▼
+  const API_KEY = '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';
+  // ▲▲▲ ONLY CHANGE THE LINE ABOVE ▲▲▲
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-5',
+        max_tokens:1000,
+        system: SYSTEM + '\n\n--- DOCUMENT 1 CONTENT ---\n' + DOC1 + '\n\n--- DOCUMENT 2 CONTENT ---\n' + DOC2,
+        messages: history
+      })
+    });
     const d = await res.json();
     if(d.error) {
-  rmThink();
-  addMsg('bot',`<p>⚠️ <strong>API Error:</strong> ${d.error.message}</p>`,[]);
-  history.pop();
-} else {
+      rmThink();
+      addMsg('bot',`<p>⚠️ <strong>API Error:</strong> ${d.error.message}</p>`,[]);
+      history.pop();
+    } else {
       const raw = d.content?.[0]?.text || 'Sorry, no response received.';
       history.push({role:'assistant',content:raw});
       rmThink();
