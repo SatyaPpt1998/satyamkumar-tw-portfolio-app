@@ -636,7 +636,7 @@ async function send() {
   history.push({role:'user',content:q});
 
   try {
-  const res = await fetch('/.netlify/functions/claude',{
+  const res = await fetch('/api/claude', { // Use the redirect proxy path instead
     method:'POST',
     headers:{
       'Content-Type':'application/json'
