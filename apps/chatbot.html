@@ -640,16 +640,13 @@ async function send() {
   // ▲▲▲ ONLY CHANGE THE LINE ABOVE ▲▲▲
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body:JSON.stringify({
-        model:'claude-sonnet-4-5',
+    const res = await fetch('/.netlify/functions/cloud',{
+  method:'POST',
+  headers:{
+    'Content-Type':'application/json'
+  },
+  body:JSON.stringify({
+    model:'claude-sonnet-4-5',
         max_tokens:1000,
         system: SYSTEM + '\n\n--- DOCUMENT 1 CONTENT ---\n' + DOC1 + '\n\n--- DOCUMENT 2 CONTENT ---\n' + DOC2,
         messages: history
