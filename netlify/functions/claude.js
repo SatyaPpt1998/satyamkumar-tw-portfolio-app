@@ -1,4 +1,4 @@
-// netlify/functions/cloud.js
+// netlify/functions/claude.js
 // Secure proxy — your API key never touches the browser
 exports.handler = async (event) => {
 
