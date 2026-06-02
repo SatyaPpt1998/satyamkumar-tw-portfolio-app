@@ -26,7 +26,7 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body);
 
     const postData = JSON.stringify({
-      model:      'claude-sonnet-4-5',
+      model:      body.model || 'claude-sonnet-4-20250514',
       max_tokens: body.max_tokens || 1000,
       system:     body.system     || '',
       messages:   body.messages   || []
