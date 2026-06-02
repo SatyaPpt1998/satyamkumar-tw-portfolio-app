@@ -635,23 +635,19 @@ async function send() {
   addThink();
   history.push({role:'user',content:q});
 
-  // ▼▼▼ PASTE YOUR ANTHROPIC API KEY BELOW (replace the text inside the quotes) ▼▼▼
-  const API_KEY = 'API KEY';
-  // ▲▲▲ ONLY CHANGE THE LINE ABOVE ▲▲▲
-
   try {
-    const res = await fetch('/.netlify/functions/cloud',{
-  method:'POST',
-  headers:{
-    'Content-Type':'application/json'
-  },
-  body:JSON.stringify({
-    model:'claude-sonnet-4-5',
-        max_tokens:1000,
-        system: SYSTEM + '\n\n--- DOCUMENT 1 CONTENT ---\n' + DOC1 + '\n\n--- DOCUMENT 2 CONTENT ---\n' + DOC2,
-        messages: history
-      })
-    });
+  const res = await fetch('/.netlify/functions/cloud',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      model:'claude-sonnet-4-5',
+      max_tokens:1000,
+      system: SYSTEM + '\n\n--- DOCUMENT 1 CONTENT ---\n' + DOC1 + '\n\n--- DOCUMENT 2 CONTENT ---\n' + DOC2,
+      messages: history
+    })
+  });
     const d = await res.json();
     if(d.error) {
       rmThink();
