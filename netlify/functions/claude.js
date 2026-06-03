@@ -44,7 +44,7 @@ exports.handler = async (event) => {
   }
 
   const postData = JSON.stringify({
-    model:      body.model      || 'claude-haiku-4-5',
+    model:      body.model      || 'claude-3-5-haiku-20241022', 
     max_tokens: body.max_tokens || 1000,
     system:     body.system     || '',
     messages:   body.messages   || []
@@ -57,10 +57,10 @@ exports.handler = async (event) => {
         path:     '/v1/messages',
         method:   'POST',
         headers: {
-          'Content-Type':      'application/json',
+          'content-type':      'application/json',
           'x-api-key':         apiKey,
-          'anthropic-version': '2023-06-01',
-          'Content-Length':    Buffer.byteLength(postData)
+          'anthropic-version': '2023-06-01', // This version header is mandatory
+          'content-length':    Buffer.byteLength(postData)
         }
       };
 
