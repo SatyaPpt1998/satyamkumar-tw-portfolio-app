@@ -736,12 +736,12 @@ async function handleSubmit(){
     const resp=await fetch('/.netlify/functions/claude',{
   method:'POST',
   headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({
-    model:'claude-sonnet-4-20250514',
-        max_tokens:200,
-        system:sysPrompt,
-        messages:[{role:'user',content:userMsg}]
-      })
+  body: JSON.stringify({
+  model: 'claude-3-5-haiku-20241022',
+  max_tokens: 200,
+  system: sysPrompt,
+  messages: [{role: 'user', content: userMsg }]
+})
     });
 
     const data=await resp.json();
